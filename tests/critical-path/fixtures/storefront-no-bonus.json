@@ -1,0 +1,19 @@
+{
+  "Offers": [
+    {
+      "OfferID": "test-offer-1",
+      "IsDirectPurchase": false,
+      "StartDate": "2024-01-01T00:00:00Z",
+      "Cost": {
+        "85ad13f7-3d1b-508f-8c90-63da8c3c76d5": 1775
+      },
+      "Rewards": [
+        {
+          "ItemTypeID": "test-skin-1",
+          "ItemID": "test-skin-uuid-1",
+          "Quantity": 1
+        }
+      ]
+    }
+  ]
+}
