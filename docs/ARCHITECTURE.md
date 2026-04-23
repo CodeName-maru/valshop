@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-VAL-Shop 은 Next.js (App Router) 기반 단일 레포 풀스택 PWA 이다. 프런트엔드는 React 로 모바일 Chrome 우선 렌더링, 백엔드는 Next.js Route Handlers 가 Riot 비공식 API 를 프록시한다. Vercel Serverless 인프라에 올라가며, Phase 2 에서 Supabase (위시리스트 + 토큰 vault), Vercel Cron (주기 워커), Web Push (VAPID) 가 추가된다.
+VAL-Shop 은 Next.js (App Router) 기반 단일 레포 풀스택 PWA 이다. 프런트엔드는 React 로 모바일 Chrome 우선 렌더링, 백엔드는 Next.js Route Handlers 가 Riot 비공식 API 를 프록시한다. Vercel Serverless 인프라에 올라가며, Phase 2 에서 Supabase (위시리스트 + 토큰 vault), Vercel Cron (주기 워커), Resend (이메일 알림) 이 추가된다.
 
 이 문서는 MVP 와 Phase 2 의 구조를 동시에 다룬다. Phase 2 만 해당하는 요소는 (P2) 로 표기.
 
@@ -21,15 +21,15 @@ VAL-Shop 은 Next.js (App Router) 기반 단일 레포 풀스택 PWA 이다. 프
 - **Domain Model**: `lib/domain/`. 앱 도메인 타입 (`Skin`, `TodayStore`, `WishlistItem` 등) 을 TypeScript `interface` / `type` 으로 선언. Spring 의 `domain/`·`@Value` object 대응. DB 테이블에 묶이지 않은 순수 타입.
 - **Token Vault (P2)**: Supabase `user_tokens` 테이블. `pgcrypto` + RLS (user_id 본인만 select/update). MVP 는 httpOnly cookie 한정; Phase 2 에서 워커가 접근할 수 있도록 서버 DB 로 확장.
 - **Wishlist Store (P2)**: Supabase `wishlist` 테이블. (`user_id`, `skin_uuid`) PK, RLS 본인만.
-- **Push Worker (P2)**: `/api/cron/check-wishlist` Vercel Cron 엔드포인트. 1시간마다 실행; 전체 유저 순회 → token vault 에서 토큰 decrypt → storefront 호출 → wishlist 매칭 → Web Push 디스패처 호출.
-- **Web Push Dispatcher (P2)**: `lib/push/dispatch.ts`. `web-push` 라이브러리 + VAPID 키. Subscription 은 Supabase `push_subscriptions` 에 저장.
+- **Notification Worker (P2)**: `/api/cron/check-wishlist` Vercel Cron 엔드포인트. 1시간마다 실행; 전체 유저 순회 → token vault 에서 토큰 decrypt → storefront 호출 → wishlist 매칭 → Email Dispatcher 호출.
+- **Email Dispatcher (P2)**: `lib/email/dispatch.ts`. `resend` SDK 로 이메일 발송. 수신 주소는 Supabase Auth 의 `users.email` 사용 → 별도 구독 테이블 없음.
 
 의존성 방향 (단방향, 순환 없음):
 ```
 Web UI → Auth Proxy / Store Proxy
 Auth Proxy → Crypto, (P2) Token Vault
 Store Proxy → Crypto, Client Version Resolver, Meta Catalog
-Push Worker (P2) → Token Vault, Store Proxy internals, Wishlist Store, Push Dispatcher
+Notification Worker (P2) → Token Vault, Store Proxy internals, Wishlist Store, Email Dispatcher
 ```
 
 ## 3. 폴더 구조
@@ -52,7 +52,6 @@ valshop/
 │   │   │   └── logout/route.ts
 │   │   ├── store/route.ts
 │   │   ├── wishlist/route.ts          # P2
-│   │   ├── push/subscribe/route.ts    # P2
 │   │   └── cron/check-wishlist/route.ts   # P2
 │   ├── layout.tsx
 │   └── globals.css
@@ -76,13 +75,13 @@ valshop/
 │   │   ├── client.ts
 │   │   ├── server.ts
 │   │   └── types.ts                   # DB row types (@Entity 대응)
-│   └── push/                          # P2
-│       └── dispatch.ts
+│   └── email/                         # P2
+│       ├── dispatch.ts                # Resend 클라이언트 래퍼
+│       └── templates.ts               # 이메일 본문 빌더
 ├── supabase/                          # P2 — Flyway migrations 대응
 │   └── migrations/
 │       ├── 0001_user_tokens.sql
-│       ├── 0002_wishlist.sql
-│       └── 0003_push_subscriptions.sql
+│       └── 0002_wishlist.sql
 ├── public/
 │   ├── manifest.webmanifest
 │   └── icons/
@@ -172,8 +171,8 @@ Vercel Cron (hourly)
           call storefront (reuse Store Proxy lib)
           diff with wishlist
           if match:
-            fetch push_subscriptions
-            for each sub: web-push send
+            lookup user.email (Supabase auth)
+            resend.emails.send({ to, subject, html })
           (on 401) mark user for re-auth
 ```
 
@@ -207,7 +206,7 @@ Vercel Cron (hourly)
 | `pd.kr.a.pvp.net` | 상점 조회 | 라이엇 본 서비스, 99%+ | clientVersion 헤더 틀리면 400 | 재시도 1회 후 에러 |
 | `valorant-api.com` | 스킨 메타 + clientVersion | 커뮤니티, ~99% | 없음 (CDN) | ISR stale cache / placeholder |
 | Supabase (P2) | DB + vault | 무료 99.9% | 무료 500MB DB, 5만 MAU | 위시리스트 비활성, 대시보드만 동작 |
-| Web Push (P2) | 알림 | 브라우저 벤더 | VAPID 서명 필수 | 실패 로깅 only |
+| Resend (P2) | 이메일 알림 | 99.9% SLA (무료), 3000/월 | 100/일 soft limit | 실패 로깅 + 다음 cron 재시도 |
 | Vercel Cron (P2) | 워커 트리거 | Vercel | Hobby: 일 제한, 최소 간격 1h | 누락 hour 는 그냥 skip |
 
 ## 5.1. DB 스키마 (Phase 2)
@@ -238,20 +237,9 @@ create table wishlist (
 );
 alter table wishlist enable row level security;
 create policy "own rows" on wishlist for all using (auth.uid() = user_id);
-
--- supabase/migrations/0003_push_subscriptions.sql
-create table push_subscriptions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references user_tokens(user_id) on delete cascade,
-  endpoint text not null,
-  p256dh text not null,
-  auth text not null,
-  created_at timestamptz default now(),
-  unique (user_id, endpoint)
-);
-alter table push_subscriptions enable row level security;
-create policy "own rows" on push_subscriptions for all using (auth.uid() = user_id);
 ```
+
+이메일 알림은 Supabase Auth 의 `users.email` 을 그대로 사용하므로 구독 테이블 불필요 (ADR-0008).
 
 MVP 에는 위 테이블 **모두 미생성**. httpOnly cookie 에 AES-GCM 암호화된 토큰만 저장.
 
@@ -377,6 +365,9 @@ CI 는 없음 (§ 6 Operability 에 일치 — git push 배포만). 로컬 pre-c
 - ADR-0003: meta-catalog-isr-caching
 - ADR-0004: push-worker-vercel-cron-hourly
 - ADR-0005: client-version-auto-resolve
+- ADR-0006: test-stack-choice
+- ADR-0007: styling-framework
+- ADR-0008: notification-channel-email
 
 ## 8. 미해결 질문
 

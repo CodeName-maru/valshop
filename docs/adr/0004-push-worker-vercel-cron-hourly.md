@@ -6,7 +6,7 @@
 
 ## Context
 
-PRD Phase 2 FR-8 은 "위시리스트 스킨이 상점에 뜨면 지정 시간 내 Web Push 도달" 을 요구한다. 초기 목표는 5분이었으나, Vercel Hobby (무료) 플랜의 Cron 최소 간격 제약 (일 제한·시간 단위 스케줄만 허용) 으로 5분 단위 폴링이 불가능함이 Phase 3 elicitation 에서 밝혀졌다.
+PRD Phase 2 FR-8 은 "위시리스트 스킨이 상점에 뜨면 지정 시간 내 알림 도달" 을 요구한다 (채널 결정은 ADR-0008 에서 이메일로 확정). 초기 목표는 5분이었으나, Vercel Hobby (무료) 플랜의 Cron 최소 간격 제약 (일 제한·시간 단위 스케줄만 허용) 으로 5분 단위 폴링이 불가능함이 Phase 3 elicitation 에서 밝혀졌다.
 
 대안 탐색 결과 무료 티어로 5분 주기를 달성할 수 있는 경로 (GitHub Actions scheduled workflow, Supabase pg_cron, cron-job.org 외부 ping) 들이 존재하나, 각각 Vercel 과 별도 인프라를 도입하는 부담이 있고, 솔로 개발자의 3일 MVP + 여력 시 Phase 2 구조에 맞지 않는다.
 
