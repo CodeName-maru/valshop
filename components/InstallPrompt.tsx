@@ -73,10 +73,10 @@ export function InstallPrompt() {
       <div className="container mx-auto flex items-center justify-between">
         <span className="text-sm">앱으로 설치하여 더 빠르게 이용하세요</span>
         <div className="flex gap-2">
-          <Button size="sm" variant="ghost" onClick={handleDismiss}>
+          <Button variant="ghost" onClick={handleDismiss} className="h-8 px-3 text-xs">
             나중에
           </Button>
-          <Button size="sm" onClick={handleInstall}>
+          <Button onClick={handleInstall} className="h-8 px-3 text-xs">
             앱으로 설치
           </Button>
         </div>

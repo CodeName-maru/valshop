@@ -31,14 +31,12 @@ export function NightMarketView({ market, metaBySkin }: NightMarketViewProps) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {market.items.map((item) => {
           const meta = metaBySkin[item.skinUuid];
-          return (
-            <NightMarketCard
-              key={item.skinUuid}
-              item={item}
-              skinName={meta?.name}
-              tier={meta?.tier}
-            />
-          );
+          const props = {
+            key: item.skinUuid,
+            item,
+            ...(meta ? { skinName: meta.name, tier: meta.tier } : {}),
+          };
+          return <NightMarketCard {...props} />;
         })}
       </div>
     </div>

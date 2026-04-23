@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
   experimental: {
     typedRoutes: true,
   },
+  // typedRoutes 옵션 (Next.js 15+)
+  typedRoutes: true,
 
   // 이미지 최적화를 위한 외부 도메인 허용
   images: {
