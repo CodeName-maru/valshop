@@ -133,6 +133,49 @@ describe("Feature: Riot 로그인 콜백 - 동시성", () => {
   });
 });
 
+// Test 2-4: Riot call order and payload verification
+describe("Feature: Riot 로그인 콜백 - 호출 순서", () => {
+  it("givenAccessToken_whenCallback_thenCallsEntitlementsThenUserinfoInOrder", async () => {
+    // Track call order using MSW
+    const callOrder: string[] = [];
+
+    // Use server.use for this test (will be reset by afterEach)
+    // Note: MSW handlers may be called multiple times during request processing
+    // We only care about the successful calls in the correct order
+    server.use(
+      http.post("https://entitlements.auth.riotgames.com/api/token/v1", ({ request }) => {
+        callOrder.push("entitlements");
+        // Verify Authorization header
+        expect(request.headers.get("Authorization")).toBe("Bearer test-token-2-4");
+        return HttpResponse.json({ entitlements_token: "mock-entitlements-jwt" });
+      }),
+      http.get("https://auth.riotgames.com/userinfo", ({ request }) => {
+        callOrder.push("userinfo");
+        // Verify Authorization header
+        expect(request.headers.get("Authorization")).toBe("Bearer test-token-2-4");
+        return HttpResponse.json({ sub: "mock-puuid-12345" });
+      }),
+    );
+
+    const { handleAuthCallback } = await import("@/app/api/auth/callback/route");
+    await handleAuthCallback({
+      state: "test-state",
+      accessToken: "test-token-2-4",
+      cookieState: "test-state",
+      baseUrl: "http://localhost",
+    });
+
+    // Verify call order: entitlements first, then userinfo
+    // MSW may call handlers multiple times (CORS preflight, etc.)
+    // We only care that entitlements comes before userinfo
+    const entitlementsIndex = callOrder.indexOf("entitlements");
+    const userinfoIndex = callOrder.indexOf("userinfo");
+    expect(entitlementsIndex).toBeGreaterThanOrEqual(0);
+    expect(userinfoIndex).toBeGreaterThanOrEqual(0);
+    expect(entitlementsIndex).toBeLessThan(userinfoIndex);
+  });
+});
+
 // Test 2-5: Riot 5xx error handling
 describe("Feature: Riot 로그인 콜백 - 에러 처리", () => {
   it("givenEntitlementsReturns500_whenCallback_thenRedirectsToLoginUpstreamError", async () => {
