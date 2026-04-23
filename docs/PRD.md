@@ -88,7 +88,7 @@ Out-of-scope (영원히 안 함 또는 명시적 제외):
 | Performance | TTI ≤ 3s, API p95 ≤ 1s |
 | Scale | ~50 concurrent, ~1000 위시리스트 레코드 |
 | Availability | 99% best-effort, 유지보수 윈도우 자유 (Vercel free tier 상속) |
-| Security | RSO 토큰 AES 암호화 + HTTPS only + PW 서버 미저장 + 서버측 Supabase token vault (암호화 저장) |
+| Security | RSO 토큰 AES 암호화 + HTTPS only + PW 서버 미저장 (MVP); 서버측 Supabase token vault (암호화 저장) 는 Phase 2 에서 도입 |
 | Compliance | Riot ToS 준수 + 푸터에 'fan-made' 고지 + PIPA 최소수준 (개인정보 최소 수집, 한국 유저 대상) |
 | Operability | Vercel 기본 로그 + 에러 알림 없음 + Git push 기반 배포, 롤백은 Vercel instant rollback 사용 |
 | Cost | $0 / 월 — Vercel + Supabase 무료 티어 한도 내. 초과 시 기능 트래픽 억제 |
@@ -113,7 +113,7 @@ MVP (주말) 수락 기준:
 - **AC-3**: 상점 갱신 카운트다운이 ±1초 정확도로 실시간 갱신된다.
 - **AC-4**: Chrome Lighthouse Mobile 측정 TTI ≤ 3s.
 - **AC-5**: `*.vercel.app` 주소로 공개 접근 가능하고 PWA 설치 배너가 동작한다.
-- **AC-6**: 1주일 운영 후 Vercel / Supabase 사용량이 무료 티어 한도 내에 머문다.
+- **AC-6**: 월별 Vercel / Supabase 사용량이 무료 티어 한도 내에 머문다.
 
 Phase 2 (여력 시) 수락 기준:
 
