@@ -1,7 +1,7 @@
 # ADR-0004: push-worker-vercel-cron-hourly
 
 - 작성일: 2026-04-23
-- 상태: ACCEPTED
+- 상태: SUPERSEDED by ADR-0009 (2026-04-24) — Hobby 가 hourly 를 허용하지 않는 것으로 정책 확인됨
 - 연관: [PRD](../PRD.md#3-목표--non-goals), [Architecture](../ARCHITECTURE.md#2-컴포넌트)
 
 ## Context
