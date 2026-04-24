@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "next dev",
     "icons": "tsx scripts/generate-icons.ts",
-    "prebuild": "npm run icons",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

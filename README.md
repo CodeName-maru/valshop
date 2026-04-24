@@ -121,7 +121,7 @@ npx lhci autorun --collect.url=http://localhost:3000/dashboard
 ```
 
 - PWA 카테고리 점수(특히 "Installable") 가 통과하는지 확인하세요.
-- 아이콘 자산은 `npm run icons` 로 재생성할 수 있으며, `prebuild` 훅을 통해 자동 실행됩니다.
+- 아이콘 자산은 `npm run icons` 로 재생성합니다 (SVG 소스 변경 시 수동 실행). 생성된 PNG/ICO 는 git 에 커밋되어 빌드 시 재생성되지 않습니다 — production 빌드는 `sharp`/`tsx` (devDependency) 없이 동작합니다.
 - 본 프로젝트는 팬메이드(fan-made) 프로젝트로 Riot Games 공식 자산을 사용하지 않습니다 (하단 고지 참고).
 
 ## 개인정보처리방침

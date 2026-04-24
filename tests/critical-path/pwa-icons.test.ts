@@ -28,16 +28,8 @@ describe("Feature: PWA 아이콘 소스", () => {
 
 describe("Feature: 아이콘 생성 스크립트", () => {
   beforeAll(() => {
-    // 이전 실행 결과가 없을 때만 생성 (빠른 로컬 반복을 위해)
-    const pub = join(ROOT, "public");
-    const allExist =
-      existsSync(join(pub, "icons/icon-192.png")) &&
-      existsSync(join(pub, "icons/icon-512.png")) &&
-      existsSync(join(pub, "icons/icon-maskable-512.png")) &&
-      existsSync(join(pub, "favicon.ico"));
-    if (!allExist) {
-      execSync("npm run icons", { cwd: ROOT, stdio: "inherit" });
-    }
+    // 매 실행마다 재생성하여 스크립트 회귀를 검증 (stale 커밋 산출물에 의존 금지)
+    execSync("npm run icons", { cwd: ROOT, stdio: "inherit" });
   }, 60_000);
 
   it("givenScriptRun_whenFinished_thenAllIconFilesGenerated", () => {
