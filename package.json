@@ -27,6 +27,7 @@
     "@supabase/supabase-js": "^2.104.1",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
+    "@types/tough-cookie": "^4.0.5",
     "@vitest/ui": "^4.1.5",
     "lucide-react": "^1.8.0",
     "msw": "^2.13.5",
@@ -35,6 +36,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "resend": "^6.12.2",
+    "tough-cookie": "^6.0.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"
   },
