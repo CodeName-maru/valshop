@@ -32,3 +32,39 @@ export type StorefrontOffer = {
   skinUuid: string;
   priceVp: number;
 };
+
+/**
+ * 크로마 정보
+ * FR-9: 스킨 색상 옵션
+ */
+export type Chroma = {
+  uuid: string;
+  displayName: string;
+  fullRender: string;
+  swatch: string | null;
+};
+
+/**
+ * 스킨 레벨 정보
+ * FR-9: 업그레이드 레벨별 이미지
+ */
+export type SkinLevel = {
+  uuid: string;
+  displayName: string;
+  displayIcon: string | null;
+  streamedVideo: string | null;
+};
+
+/**
+ * 스킨 상세 정보
+ * FR-9: 상세 페이지에 필요한 모든 데이터
+ */
+export type SkinDetail = {
+  uuid: string;
+  displayName: string;
+  displayIcon: string | null;
+  chromas: Chroma[];
+  levels: SkinLevel[];
+  streamedVideo?: string | null;
+  contentTierUuid?: string | null;
+};
