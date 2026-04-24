@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "icons": "tsx scripts/generate-icons.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -44,6 +45,9 @@
     "eslint-config-next": "^16.2.4",
     "jsdom": "^29.0.2",
     "next-test-api-route-handler": "^5.0.4",
-    "tailwindcss": "^3.4.19"
+    "sharp": "^0.33.5",
+    "tailwindcss": "^3.4.19",
+    "to-ico": "^1.1.5",
+    "tsx": "^4.21.0"
   }
 }

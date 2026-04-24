@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- data-fan-made="true" VAL-Shop 팬메이드 maskable 아이콘. safe zone 80%. Riot 공식 자산 미사용. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" data-fan-made="true" data-safe-zone="80">
+  <rect width="512" height="512" fill="#ff4655"/>
+  <!-- safe zone: 중앙 409.6px (80%) 영역 안에 콘텐츠 배치 -->
+  <g fill="#0f1923" font-family="'Arial Black','Helvetica Neue',Arial,sans-serif" font-weight="900" text-anchor="middle">
+    <text x="256" y="308" font-size="210" letter-spacing="-8">VS</text>
+  </g>
+</svg>

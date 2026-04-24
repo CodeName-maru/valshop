@@ -107,6 +107,23 @@ npm test
 npm run test:e2e
 ```
 
+## Lighthouse 로컬 측정
+
+PWA 설치 가능성(installability) 및 성능 회귀를 로컬에서 확인하려면 `@lhci/cli` 를 사용합니다. CI 자동화는 비용(NFR) 제약으로 도입하지 않았으며, 배포 전 수동 스모크를 권장합니다.
+
+```bash
+# 프로덕션 빌드 후 서버 기동
+npm run build
+npm start
+
+# 별도 터미널에서 Lighthouse 실행
+npx lhci autorun --collect.url=http://localhost:3000/dashboard
+```
+
+- PWA 카테고리 점수(특히 "Installable") 가 통과하는지 확인하세요.
+- 아이콘 자산은 `npm run icons` 로 재생성합니다 (SVG 소스 변경 시 수동 실행). 생성된 PNG/ICO 는 git 에 커밋되어 빌드 시 재생성되지 않습니다 — production 빌드는 `sharp`/`tsx` (devDependency) 없이 동작합니다.
+- 본 프로젝트는 팬메이드(fan-made) 프로젝트로 Riot Games 공식 자산을 사용하지 않습니다 (하단 고지 참고).
+
 ## 개인정보처리방침
 
 이 프로젝트는 다음 데이터를 수집합니다:
