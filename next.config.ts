@@ -6,10 +6,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // PWA 지원을 위해 typedRoutes 활성
-  experimental: {
-    typedRoutes: true,
-  },
   // typedRoutes 옵션 (Next.js 15+)
   typedRoutes: true,
 

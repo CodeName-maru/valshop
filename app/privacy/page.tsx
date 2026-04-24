@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "개인정보 처리방침",
@@ -79,8 +78,6 @@ export default function PrivacyPage() {
           </p>
         </section>
       </div>
-
-      <Footer />
     </div>
   );
 }

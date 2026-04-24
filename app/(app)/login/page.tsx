@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "로그인",
@@ -28,8 +27,6 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
