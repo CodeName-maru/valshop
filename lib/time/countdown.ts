@@ -26,7 +26,8 @@ export function secondsUntilNextKstMidnight(nowMs: number): number {
   // Calculate remaining milliseconds, convert to seconds, and round up
   // Math.ceil ensures we show "1" second remaining even at 0.1s
   const remainingMs = nextMidnightKst - nowKst;
-  const remainingSeconds = Math.ceil(remainingMs / 1000);
+  // Round to nearest millisecond first to avoid floating point issues at midnight boundary
+  const remainingSeconds = Math.ceil(Math.round(remainingMs) / 1000);
 
   // Ensure non-negative (shouldn't happen with above logic, but safety clamp)
   return Math.max(0, remainingSeconds);
