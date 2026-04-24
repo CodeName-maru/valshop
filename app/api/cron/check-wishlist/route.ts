@@ -13,6 +13,7 @@ import { createWishlistRepo } from "@/lib/supabase/wishlist-repo";
 import { createNotificationsRepo } from "@/lib/supabase/notifications-repo";
 import { createStorefrontClient } from "@/lib/riot/storefront-server";
 import { createCatalog } from "@/lib/valorant-api/catalog";
+import { logger } from "@/lib/logger";
 
 // Runtime configuration
 export const runtime = "nodejs";
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("[cron] Worker error:", error);
+    logger.error("cron worker error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       {
         success: false,

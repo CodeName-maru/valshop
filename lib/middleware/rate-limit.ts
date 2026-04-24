@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import type { AuthErrorCode } from "@/lib/riot/errors";
+import { logger } from "@/lib/logger";
 
 /**
  * Rate limit 옵션
@@ -83,7 +84,7 @@ export async function withRateLimit(
 
     if (fetchError && fetchError.code !== "PGRST116") {
       // PGRST116는 not found, 그 외 에러는 로그 후 통과 (fail-open for availability)
-      console.error("[rate-limit] DB fetch error:", fetchError);
+      logger.warn("rate-limit DB fetch error", { code: fetchError.code, message: fetchError.message });
       return null;
     }
 
@@ -98,7 +99,7 @@ export async function withRateLimit(
         });
 
       if (insertError) {
-        console.error("[rate-limit] DB insert error:", insertError);
+        logger.warn("rate-limit DB insert error", { code: insertError.code, message: insertError.message });
       }
       return null; // 통과
     }
@@ -116,7 +117,7 @@ export async function withRateLimit(
         .eq("bucket_key", bucketKey);
 
       if (resetError) {
-        console.error("[rate-limit] DB reset error:", resetError);
+        logger.warn("rate-limit DB reset error", { code: resetError.code, message: resetError.message });
       }
       return null; // 통과
     }
@@ -148,13 +149,13 @@ export async function withRateLimit(
       .eq("bucket_key", bucketKey);
 
     if (updateError) {
-      console.error("[rate-limit] DB update error:", updateError);
+      logger.warn("rate-limit DB update error", { code: updateError.code, message: updateError.message });
     }
 
     return null; // 통과
   } catch (e) {
     // 예외 발생 시 fail-open (가용성 우선)
-    console.error("[rate-limit] Unexpected error:", e);
+    logger.error("rate-limit unexpected error", { error: e instanceof Error ? e.message : String(e) });
     return null;
   }
 }

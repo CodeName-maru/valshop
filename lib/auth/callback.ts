@@ -7,6 +7,7 @@ import { exchangeAccessTokenForEntitlements, fetchPuuid, withTimeout } from "@/l
 import { encryptSession } from "@/lib/session/crypto";
 import type { SessionPayload } from "@/lib/session/types";
 import { httpRiotFetcher } from "@/lib/riot/fetcher";
+import { logger } from "@/lib/logger";
 
 export interface AuthCallbackInput {
   state: string;
@@ -46,7 +47,7 @@ export async function handleAuthCallback(input: AuthCallbackInput): Promise<Next
     if (error instanceof Error && error.message === "Timeout") {
       return NextResponse.redirect(redirectUrl("/login?error=timeout"), 302);
     }
-    console.error("[auth/callback] Token exchange failed:", error instanceof Error ? error.name : "Unknown");
+    logger.error("auth/callback token exchange failed", { errorName: error instanceof Error ? error.name : "Unknown" });
     return NextResponse.redirect(redirectUrl("/login?error=upstream"), 302);
   }
 
@@ -65,7 +66,7 @@ export async function handleAuthCallback(input: AuthCallbackInput): Promise<Next
   try {
     sessionCiphertext = await encryptSession(payload);
   } catch (error) {
-    console.error("[auth/callback] Session encryption failed:", error instanceof Error ? error.name : "Unknown");
+    logger.error("auth/callback session encryption failed", { errorName: error instanceof Error ? error.name : "Unknown" });
     return NextResponse.redirect(redirectUrl("/login?error=upstream"), 302);
   }
 

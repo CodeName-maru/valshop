@@ -11,20 +11,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionStore } from "@/lib/session/store";
 import { withOrigin } from "@/lib/middleware/origin-check";
 import type { AuthErrorCode } from "@/lib/riot/errors";
+import { logger as realLogger } from "@/lib/logger";
 
-/**
- * Logger stub (plan 0024에서 대체 예정)
- */
+// Re-export with module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => {
-    // console.log(`[INFO] ${msg}`, meta);
-  },
-  warn: (msg: string, meta?: Record<string, unknown>) => {
-    console.warn(`[WARN] ${msg}`, meta);
-  },
-  error: (msg: string, meta?: Record<string, unknown>) => {
-    console.error(`[ERROR] ${msg}`, meta);
-  },
+  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[auth.logout] ${msg}`, meta),
+  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.logout] ${msg}`, meta),
+  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.logout] ${msg}`, meta),
 };
 
 /**

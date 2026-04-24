@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { handleAuthCallback, type AuthCallbackInput } from "@/lib/auth/callback";
+import { logger } from "@/lib/logger";
 
 export type { AuthCallbackInput, AuthErrorCode } from "@/lib/auth/callback";
 
@@ -19,7 +20,10 @@ export async function GET(request: NextRequest) {
   const state = url.searchParams.get("state");
   const accessToken = url.searchParams.get("access_token");
 
-  console.log("[auth/callback] state:", state ? "present" : "missing", "accessToken:", accessToken ? "present" : "missing");
+  logger.debug("auth/callback request", {
+    hasState: !!state,
+    hasAccessToken: !!accessToken,
+  });
 
   let cookieState = request.cookies.get("auth_state")?.value ?? null;
   if (!cookieState) {

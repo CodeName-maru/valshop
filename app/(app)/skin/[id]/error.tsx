@@ -7,6 +7,7 @@
  */
 
 import { useEffect } from "react";
+import { logger } from "@/lib/logger";
 
 export default function Error({
   error,
@@ -16,8 +17,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log error to console (Vercel will capture this)
-    console.error("Skin detail page error:", error);
+    logger.error("Skin detail page error", { message: error.message, digest: error.digest });
   }, [error]);
 
   return (

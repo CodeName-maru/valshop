@@ -17,6 +17,7 @@ import { createRiotFetcher } from "@/lib/riot/fetcher";
 import { encryptSession } from "@/lib/session/crypto";
 import type { SessionPayload } from "@/lib/session/types";
 import { cookies } from "next/headers";
+import { logger } from "@/lib/logger";
 
 const DEFAULT_REGION = "kr";
 const SESSION_TTL_HOURS = 1; // Riot access token은 1시간 유효
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (e) {
-    console.error("[auth/manual] Error:", e);
+    logger.error("auth/manual error", { error: e instanceof Error ? e.message : String(e) });
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Failed to authenticate" },
       { status: 500 }

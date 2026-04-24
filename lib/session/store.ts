@@ -12,20 +12,13 @@ import type { SessionTokens, ResolvedSession } from "./types";
 import { reauthAccess } from "./reauth";
 import { encryptWithKey, getTokenKey, decryptWithKey, NEAR_EXPIRY_THRESHOLD_SEC, SESSION_TTL_SEC } from "./crypto";
 import { httpRiotFetcher } from "@/lib/riot/fetcher";
+import { logger as realLogger } from "@/lib/logger";
 
-/**
- * Plan 0020: Logger (임시 stub - plan 0024에서 대체)
- */
+// Re-export with our module prefix
 const logger = {
-  info: (_msg: string, _meta?: Record<string, unknown>) => {
-    // console.log(_msg, _meta);
-  },
-  warn: (_msg: string, _meta?: Record<string, unknown>) => {
-    console.warn(`[session] ${_msg}`, _meta);
-  },
-  error: (_msg: string, _meta?: Record<string, unknown>) => {
-    console.error(`[session] ${_msg}`, _meta);
-  },
+  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[session] ${msg}`, meta),
+  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[session] ${msg}`, meta),
+  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[session] ${msg}`, meta),
 };
 
 /**
