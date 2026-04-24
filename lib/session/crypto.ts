@@ -4,37 +4,112 @@
  * Plan 0011: AES-GCM 배선 — 세션 쿠키 payload 를 `TOKEN_ENC_KEY`(32B base64) 로
  * 암/복호화하는 단일 진입점. `lib/crypto/aes-gcm.ts` 의 저수준 primitive 재사용.
  *
- * - `getSessionKey()`: 모듈 스코프 Promise 캐시로 요청당 importKey 비용 제거
+ * Plan 0020: 이중 키 지원 + null 반환 정규화
+ * - `TOKEN_ENC_KEY`: DB 토큰 컬럼 암호화
+ * - `PENDING_ENC_KEY`: auth_pending cookie 암호화 (키 분리로 blast radius 최소화)
+ * - `decryptWithKey()`: GCM 실패 시 null 반환 (throw 금지 - oracle 방지)
+ * - 환경변수 부재는 throw (config error) vs 복호화 실패는 null (data error) 구분
+ *
+ * - `getSessionKey()`: @deprecated `getTokenKey` 사용 권장 (하위 호환 유지)
+ * - `getTokenKey()`: TOKEN_ENC_KEY 로드 + 모듈 캐시
+ * - `getPendingKey()`: PENDING_ENC_KEY 로드 + 모듈 캐시
  * - `encryptSession(payload)`: JSON.stringify → AES-GCM encrypt → base64
  * - `decryptSession(ct)`: base64 → AES-GCM decrypt → JSON.parse + 필수 필드 검증
  */
 
-import { encrypt, decrypt, loadKeyFromEnv } from "@/lib/crypto/aes-gcm";
+import { encrypt, decrypt, loadKey } from "@/lib/crypto/aes-gcm";
 import type { SessionPayload } from "./types";
 
-let cachedKey: Promise<CryptoKey> | null = null;
+// Plan 0020: 이중 키 캐시 (독립적 관리)
+let cachedTokenKey: Promise<CryptoKey> | null = null;
+let cachedPendingKey: Promise<CryptoKey> | null = null;
+
+// Plan 0020: Near-expiry 임계값 (60s 여유)
+export const NEAR_EXPIRY_THRESHOLD_SEC = 60;
+
+// Plan 0020: Session TTL (14일)
+export const SESSION_TTL_SEC = 1209600; // 14 * 24 * 60 * 60
 
 /**
- * `TOKEN_ENC_KEY` 환경변수에서 AES-GCM 키를 로드한다.
+ * Plan 0020: `TOKEN_ENC_KEY` 환경변수에서 AES-GCM 키를 로드한다.
  * 최초 호출 시 importKey 를 수행하고 그 Promise 를 캐시한다.
  * 실패(env 부재/길이 오류) 시 캐시에 저장하지 않고 throw.
  */
-export function getSessionKey(): Promise<CryptoKey> {
-  if (cachedKey) return cachedKey;
-  const p = loadKeyFromEnv();
+export function getTokenKey(): Promise<CryptoKey> {
+  if (cachedTokenKey) return cachedTokenKey;
+  const keyBase64 = process.env.TOKEN_ENC_KEY;
+  if (!keyBase64) {
+    throw new Error("TOKEN_ENC_KEY environment variable is not set");
+  }
+  const p = loadKey(keyBase64);
   // 실패를 캐시하지 않도록 실패 시 캐시 무효화
   p.catch(() => {
-    if (cachedKey === p) cachedKey = null;
+    if (cachedTokenKey === p) cachedTokenKey = null;
   });
-  cachedKey = p;
+  cachedTokenKey = p;
   return p;
+}
+
+/**
+ * Plan 0020: `PENDING_ENC_KEY` 환경변수에서 AES-GCM 키를 로드한다.
+ * 최초 호출 시 importKey 를 수행하고 그 Promise 를 캐시한다.
+ * 실패(env 부재/길이 오류) 시 캐시에 저장하지 않고 throw.
+ */
+export function getPendingKey(): Promise<CryptoKey> {
+  if (cachedPendingKey) return cachedPendingKey;
+  const keyBase64 = process.env.PENDING_ENC_KEY;
+  if (!keyBase64) {
+    throw new Error("PENDING_ENC_KEY environment variable is not set");
+  }
+  const p = loadKey(keyBase64);
+  // 실패를 캐시하지 않도록 실패 시 캐시 무효화
+  p.catch(() => {
+    if (cachedPendingKey === p) cachedPendingKey = null;
+  });
+  cachedPendingKey = p;
+  return p;
+}
+
+/**
+ * Plan 0020: @deprecated `getTokenKey` 사용 권장 (하위 호환 유지)
+ */
+export function getSessionKey(): Promise<CryptoKey> {
+  return getTokenKey();
+}
+
+/**
+ * Plan 0020: 주어진 키로 평문 암호화
+ */
+export async function encryptWithKey(
+  plaintext: string,
+  key: CryptoKey
+): Promise<string> {
+  return encrypt(plaintext, key);
+}
+
+/**
+ * Plan 0020: 주어진 키로 암호문 복호화
+ * GCM auth tag 실패/bad key 시 null 반환 (throw 금지 - oracle 방지)
+ * JSON parse 는 호출부 책임
+ */
+export async function decryptWithKey(
+  ciphertext: string,
+  key: CryptoKey
+): Promise<string | null> {
+  try {
+    return await decrypt(ciphertext, key);
+  } catch {
+    // 복호화 실패: tampered, wrong key, corrupted data
+    // null 반환으로 정규화 (공격자 oracle 방지 + warn 로그 분리)
+    return null;
+  }
 }
 
 /**
  * SessionPayload → AES-GCM 암호문(base64)
  */
 export async function encryptSession(payload: SessionPayload): Promise<string> {
-  const key = await getSessionKey();
+  const key = await getTokenKey();
   return encrypt(JSON.stringify(payload), key);
 }
 
@@ -67,11 +142,20 @@ export function isSessionExpired(payload: SessionPayload, nowMs: number = Date.n
 }
 
 /**
- * 테스트 전용 캐시 리셋 헬퍼. production 에서는 no-op.
+ * Plan 0020: 테스트 전용 캐시 리셋 헬퍼 (두 키 모두 무효화)
+ * production 에서는 no-op.
+ */
+export function resetAllKeyCachesForTest(): void {
+  if (process.env.NODE_ENV === "production") return;
+  cachedTokenKey = null;
+  cachedPendingKey = null;
+}
+
+/**
+ * @deprecated Plan 0020: `resetAllKeyCachesForTest` 사용 권장 (하위 호환 유지)
  */
 export function resetKeyCacheForTest(): void {
-  if (process.env.NODE_ENV === "production") return;
-  cachedKey = null;
+  resetAllKeyCachesForTest();
 }
 
 function isSessionPayload(v: unknown): v is SessionPayload {
