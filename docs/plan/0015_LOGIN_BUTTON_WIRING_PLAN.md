@@ -297,19 +297,19 @@ Phase 2 (에러 표면화)         │ (같은 page.tsx 편집 → 순차)
 
 | # | 항목 | 상태 | 비고 |
 |---|------|------|------|
-| 1-1 | 버튼 href === /api/auth/start 테스트 | ⬜ 미착수 | |
-| 1-2 | 클릭 후 disabled + loading 라벨 테스트 | ⬜ 미착수 | |
-| 1-3 | 중복 클릭 preventDefault 테스트 | ⬜ 미착수 | |
-| 1-4 | loading 상태 동기 반영 테스트 | ⬜ 미착수 | NFR Performance |
-| 1-5 | pageshow(bfcache) loading 리셋 테스트 | ⬜ 미착수 | NFR Availability |
-| 1-6 | fan-made 고지 보존 테스트 | ⬜ 미착수 | NFR Compliance |
-| 1-impl-layout | `app/(app)/login/layout.tsx` 신규 (metadata 이전) | ⬜ 미착수 | |
-| 1-impl-page | `app/(app)/login/page.tsx` 버튼 배선 ("use client", a + onClick + useState + pageshow) | ⬜ 미착수 | |
-| 2-1 | mfa_required → 한국어 배너 + 재시도 링크 | ⬜ 미착수 | |
-| 2-2 | unknown 코드 fallback + console.warn | ⬜ 미착수 | NFR Operability/Security |
-| 2-3 | error query 부재 시 배너 미렌더 | ⬜ 미착수 | |
-| 2-4 | error query HTML 미해석 (XSS 차단) | ⬜ 미착수 | NFR Security |
-| 2-5 | 화이트리스트 7종 코드 매핑 (it.each) | ⬜ 미착수 | Plan 0006 정합 |
-| 2-impl-page | page.tsx 에 useSearchParams + ERROR_MESSAGES + 배너 주입 | ⬜ 미착수 | |
+| 1-1 | 버튼 href === /api/auth/start 테스트 | ✅ 완료 | |
+| 1-2 | 클릭 후 disabled + loading 라벨 테스트 | ✅ 완료 | |
+| 1-3 | 중복 클릭 preventDefault 테스트 | ✅ 완료 | fireEvent 반환값으로 검증 |
+| 1-4 | loading 상태 동기 반영 테스트 | ✅ 완료 | NFR Performance |
+| 1-5 | pageshow(bfcache) loading 리셋 테스트 | ✅ 완료 | NFR Availability |
+| 1-6 | fan-made 고지 보존 테스트 | ✅ 완료 | NFR Compliance |
+| 1-impl-layout | `app/(app)/login/layout.tsx` 신규 (metadata 이전) | ✅ 완료 | |
+| 1-impl-page | `app/(app)/login/page.tsx` 버튼 배선 ("use client", a + onClick + useState + pageshow) | ✅ 완료 | |
+| 2-1 | mfa_required → 한국어 배너 + 재시도 링크 | ✅ 완료 | |
+| 2-2 | unknown 코드 fallback + console.warn | ✅ 완료 | NFR Operability/Security |
+| 2-3 | error query 부재 시 배너 미렌더 | ✅ 완료 | |
+| 2-4 | error query HTML 미해석 (XSS 차단) | ✅ 완료 | NFR Security |
+| 2-5 | 화이트리스트 7종 코드 매핑 (it.each) | ✅ 완료 | Plan 0006 정합 |
+| 2-impl-page | page.tsx 에 useSearchParams + ERROR_MESSAGES + 배너 주입 | ✅ 완료 | |
 
 **상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
