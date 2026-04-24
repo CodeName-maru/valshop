@@ -115,3 +115,32 @@ export async function loadKeyFromEnv(): Promise<CryptoKey> {
   }
   return loadKey(keyBase64);
 }
+
+/**
+ * Decrypt user tokens (access_token, refresh_token, entitlements_jwt)
+ *
+ * @param accessTokenEnc - Base64-encoded encrypted access token
+ * @param refreshTokenEnc - Base64-encoded encrypted refresh token
+ * @param entitlementsJwtEnc - Base64-encoded encrypted entitlements JWT
+ * @param key - CryptoKey for decryption
+ * @returns Decrypted tokens
+ * @throws Error if decryption fails
+ */
+export async function decryptTokens(
+  accessTokenEnc: string,
+  refreshTokenEnc: string,
+  entitlementsJwtEnc: string,
+  key: CryptoKey
+): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  entitlementsJwt: string;
+}> {
+  const [accessToken, refreshToken, entitlementsJwt] = await Promise.all([
+    decrypt(accessTokenEnc, key),
+    decrypt(refreshTokenEnc, key),
+    decrypt(entitlementsJwtEnc, key),
+  ]);
+
+  return { accessToken, refreshToken, entitlementsJwt };
+}

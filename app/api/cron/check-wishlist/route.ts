@@ -52,9 +52,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // 5. Create Resend client
     const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resendClient = new Resend(process.env.RESEND_API_KEY);
 
-    // 6. Run worker
+    // 6. Create Resend adapter
+    const resend = {
+      emails: {
+        send: async (params: { to: string | string[]; subject: string; html: string; text?: string }): Promise<{ id: string }> => {
+          const result = await resendClient.emails.send(params as any);
+          return { id: (result as any).id || "sent" };
+        },
+      },
+    };
+
+    // 7. Run worker
     const result = await runWorker({
       userTokensRepo: createUserTokensRepo(supabase),
       wishlistRepo: createWishlistRepo(supabase),

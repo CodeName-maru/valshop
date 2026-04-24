@@ -4,7 +4,6 @@
  */
 
 import { decrypt } from "@/lib/crypto/aes-gcm";
-import type { CryptoKey } from "crypto";
 
 /**
  * Storefront API response (simplified)

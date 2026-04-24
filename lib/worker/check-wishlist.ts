@@ -4,7 +4,6 @@
  * Main worker logic that processes all users and sends notifications
  */
 
-import type { CryptoKey } from "crypto";
 import { loadKeyFromEnv, decryptTokens } from "@/lib/crypto/aes-gcm";
 import { matchStoreAgainstWishlist } from "@/lib/domain/wishlist";
 import { dispatchWishlistMatch, type ResendLike } from "@/lib/email/dispatch";
@@ -99,7 +98,7 @@ export async function runWorker(deps: WorkerDeps): Promise<WorkerResult> {
           await deps.userTokensRepo.markNeedsReauth(user.user_id);
           console.log(`[worker] User ${user.user_id} needs re-auth (401)`);
         } else {
-          console.error(`[worker] User ${user.user_id} storefront error:`, error.message);
+          console.error(`[worker] User ${user.user_id} storefront error:`, (error as { message?: string }).message);
         }
       } else {
         console.error(`[worker] User ${user.user_id} error:`, error);
