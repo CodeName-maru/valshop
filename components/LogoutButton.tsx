@@ -60,7 +60,7 @@ export function LogoutButton() {
       }
 
       // 3. /login으로 리다이렉트
-      router.push("/login");
+      router.push("/login" as const);
     } finally {
       setIsPending(false);
     }

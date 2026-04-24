@@ -10,14 +10,10 @@ export const metadata: Metadata = {
   description: "오늘의 발로란트 상점 스킨 확인",
 };
 
-export default function RootLayout({
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="ko">
-      <body>{children}</body>
-    </html>
-  );
+  return <div className="flex-1">{children}</div>;
 }
