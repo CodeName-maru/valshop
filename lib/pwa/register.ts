@@ -4,16 +4,18 @@
  * 'serviceWorker' in navigator 가드로 미지원 환경에서 silent fail
  */
 
+import { logger } from "@/lib/logger";
+
 export function registerServiceWorker(): void {
   if (typeof window === "undefined") return;
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
       .then((registration) => {
-        console.log("SW registered:", registration.scope);
+        logger.info("SW registered", { scope: registration.scope });
       })
       .catch((error) => {
-        console.error("SW registration failed:", error);
+        logger.error("SW registration failed", { error: error instanceof Error ? error.message : String(error) });
       });
   }
   // 미지원 환경에서 silent fail (요구사항)

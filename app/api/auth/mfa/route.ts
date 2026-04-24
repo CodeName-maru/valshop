@@ -18,20 +18,13 @@ import { withOrigin } from "@/lib/middleware/origin-check";
 import { withRateLimit } from "@/lib/middleware/rate-limit";
 import type { AuthErrorCode } from "@/lib/riot/errors";
 import { decodeJwt } from "@/lib/session/crypto";
+import { logger as realLogger } from "@/lib/logger";
 
-/**
- * Logger stub (plan 0024에서 대체 예정)
- */
+// Re-export with module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => {
-    // console.log(`[INFO] ${msg}`, meta);
-  },
-  warn: (msg: string, meta?: Record<string, unknown>) => {
-    console.warn(`[WARN] ${msg}`, meta);
-  },
-  error: (msg: string, meta?: Record<string, unknown>) => {
-    console.error(`[ERROR] ${msg}`, meta);
-  },
+  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[auth.mfa] ${msg}`, meta),
+  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.mfa] ${msg}`, meta),
+  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.mfa] ${msg}`, meta),
 };
 
 /**

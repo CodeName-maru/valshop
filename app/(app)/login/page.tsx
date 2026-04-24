@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, type MouseEvent, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
+import { logger } from "@/lib/logger";
 
 // Plan 0006 Phase 5-3 화이트리스트와 동일 키. 신규 코드 추가 시 양쪽 grep 동기화 필요.
 const ERROR_MESSAGES: Record<string, string> = {
@@ -39,10 +40,10 @@ function LoginPageInner() {
     return () => window.removeEventListener("pageshow", onShow);
   }, []);
 
-  // 화이트리스트 외 코드일 때 console.warn
+  // 화이트리스트 외 코드일 때 logger.warn
   useEffect(() => {
     if (errorCode && !ERROR_MESSAGES[errorCode]) {
-      console.warn(`unknownErrorCode: ${errorCode}`);
+      logger.warn("unknownErrorCode", { errorCode });
     }
   }, [errorCode]);
 

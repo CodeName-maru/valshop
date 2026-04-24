@@ -7,6 +7,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { toLogPayload } from "@/lib/riot/errors";
+import { logger } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -29,15 +30,12 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // 에러 로그 출력
-    console.error(
-      JSON.stringify({
-        code: "REACT_ERROR",
-        message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        ts: new Date().toISOString(),
-      }),
-    );
+    logger.error("React error boundary caught error", {
+      code: "REACT_ERROR",
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+    });
   }
 
   render(): ReactNode {

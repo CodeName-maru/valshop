@@ -292,28 +292,28 @@ Phase 4 (rate-limit 통합 검증) ─── 4-1,4-2,4-3 체크리스트 (Phase 
 
 | # | 항목 | 상태 | 비고 |
 |---|---|---|---|
-| 1-1 | password redact | ⬜ 미착수 | |
-| 1-2 | access_token redact | ⬜ 미착수 | |
-| 1-3 | ssid 재귀 redact | ⬜ 미착수 | |
-| 1-4 | entitlements redact | ⬜ 미착수 | |
-| 1-5 | authorization 대소문자 무시 | ⬜ 미착수 | |
-| 1-6 | email redact (PIPA) | ⬜ 미착수 | |
-| 1-7 | 배열 내 중첩 redact | ⬜ 미착수 | |
-| 1-8 | 순환 참조 안전 처리 | ⬜ 미착수 | |
-| 1-9 | LOG_LEVEL env 필터 | ⬜ 미착수 | |
-| 1-10 | puuid 원본 보존 | ⬜ 미착수 | |
-| 1-impl | lib/logger.ts 구현 | ⬜ 미착수 | |
-| 2-1 | CSP 헤더 정확성 | ⬜ 미착수 | |
-| 2-2 | E2E CSP violation 0 | ⬜ 미착수 | Playwright, plan 0022 공유 |
-| 2-3 | valorant-api 이미지 허용 | ⬜ 미착수 | |
-| 2-impl | next.config.ts headers() | ⬜ 미착수 | |
-| 3-1 | no-console 에러 감지 | ⬜ 미착수 | |
-| 3-2 | logger 내부 예외 허용 | ⬜ 미착수 | |
-| 3-3 | 전수 grep = 0 hit | ⬜ 미착수 | |
-| 3-4 | 로그인 통합 password 0 assertion | ⬜ 미착수 | plan 0021 연동 |
-| 3-impl | eslint rule + console 일괄 치환 | ⬜ 미착수 | auth 우선 |
-| 4-1 | 429 경계 테스트 | ⬜ 미착수 | plan 0021 소유 기능 검증 |
-| 4-2 | 429 로그 sensitive 부재 | ⬜ 미착수 | |
-| 4-3 | 배포 직전 체크리스트 전수 ✅ | ⬜ 미착수 | ship gate |
+| 1-1 | password redact | ✅ 완료 | |
+| 1-2 | access_token redact | ✅ 완료 | |
+| 1-3 | ssid 재귀 redact | ✅ 완료 | |
+| 1-4 | entitlements redact | ✅ 완료 | |
+| 1-5 | authorization 대소문자 무시 | ✅ 완료 | |
+| 1-6 | email redact (PIPA) | ✅ 완료 | |
+| 1-7 | 배열 내 중첩 redact | ✅ 완료 | |
+| 1-8 | 순환 참조 안전 처리 | ✅ 완료 | |
+| 1-9 | LOG_LEVEL env 필터 | ✅ 완료 | |
+| 1-10 | puuid 원본 보존 | ✅ 완료 | |
+| 1-impl | lib/logger.ts 구현 | ✅ 완료 | |
+| 2-1 | CSP 헤더 정확성 | ✅ 완료 | |
+| 2-2 | E2E CSP violation 0 | ✅ 완료 | Playwright, plan 0022 공유 |
+| 2-3 | valorant-api 이미지 허용 | ✅ 완료 | |
+| 2-impl | next.config.ts headers() | ✅ 완료 | |
+| 3-1 | no-console 에러 감지 | ✅ 완료 | |
+| 3-2 | logger 내부 예외 허용 | ✅ 완료 | |
+| 3-3 | 전수 grep = 0 hit | ✅ 완료 | |
+| 3-4 | 로그인 통합 password 0 assertion | ✅ 완료 | plan 0021 연동 |
+| 3-impl | eslint rule + console 일괄 치환 | ✅ 완료 | auth 우선 |
+| 4-1 | 429 경계 테스트 | ✅ 완료 | plan 0021 소유 기능 검증 |
+| 4-2 | 429 로그 sensitive 부재 | ✅ 완료 | |
+| 4-3 | 배포 직전 체크리스트 전수 ✅ | ✅ 완료 | ship gate |
 
 **상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨

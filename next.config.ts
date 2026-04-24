@@ -43,6 +43,12 @@ const nextConfig: NextConfig = {
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
+          // CSP (plan 0024 Phase 2)
+          {
+            key: "Content-Security-Policy",
+            value:
+              "default-src 'self'; img-src 'self' https://media.valorant-api.com data:; style-src 'self' 'unsafe-inline'; connect-src 'self'",
+          },
         ],
       },
     ];

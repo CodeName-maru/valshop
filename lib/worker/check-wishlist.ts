@@ -14,6 +14,7 @@ import { getKstRotationDate } from "@/lib/supabase/notifications-repo";
 import type { Catalog } from "@/lib/valorant-api/catalog";
 import type { StorefrontClient, StorefrontApiError } from "@/lib/riot/storefront-server";
 import type { UserTokensRow } from "@/lib/supabase/types";
+import { logger } from "@/lib/logger";
 
 /**
  * Worker execution result
@@ -68,13 +69,13 @@ export async function runWorker(deps: WorkerDeps): Promise<WorkerResult> {
   try {
     key = await loadKeyFromEnv();
   } catch (error) {
-    console.error("Failed to load encryption key:", error);
+    logger.error("worker failed to load encryption key", { error: error instanceof Error ? error.message : String(error) });
     throw new Error("Worker cannot start: TOKEN_ENC_KEY not configured");
   }
 
   // Get all active users
   const users = await deps.userTokensRepo.listActive();
-  console.log(`[worker] Processing ${users.length} active users`);
+  logger.info("worker processing active users", { count: users.length });
 
   for (const user of users) {
     result.processed++;
@@ -97,17 +98,24 @@ export async function runWorker(deps: WorkerDeps): Promise<WorkerResult> {
         if (error.isAuthError === true) {
           // Mark user for re-auth
           await deps.userTokensRepo.markNeedsReauth(user.user_id);
-          console.log(`[worker] User ${user.user_id} needs re-auth (401)`);
+          logger.warn("worker user needs re-auth", { userId: user.user_id });
         } else {
-          console.error(`[worker] User ${user.user_id} storefront error:`, (error as { message?: string }).message);
+          logger.error("worker user storefront error", {
+            userId: user.user_id,
+            message: (error as { message?: string }).message,
+          });
         }
       } else {
-        console.error(`[worker] User ${user.user_id} error:`, error);
+        logger.error("worker user error", { userId: user.user_id, error });
       }
     }
   }
 
-  console.log(`[worker] Complete: ${result.processed} processed, ${result.notified} notified, ${result.errors} errors`);
+  logger.info("worker complete", {
+    processed: result.processed,
+    notified: result.notified,
+    errors: result.errors,
+  });
   return result;
 }
 
@@ -126,7 +134,7 @@ async function processUser(
   // 1. Get wishlist (skip if empty)
   const wishlist = await deps.wishlistRepo.listFor(userId);
   if (wishlist.length === 0) {
-    console.log(`[worker] User ${userId} has empty wishlist, skipping`);
+    logger.debug("worker user empty wishlist skipping", { userId });
     return false;
   }
 
@@ -148,7 +156,7 @@ async function processUser(
   // 4. Match skins
   const matchedUuids = matchStoreAgainstWishlist(storefront.skinUuids, wishlist);
   if (matchedUuids.length === 0) {
-    console.log(`[worker] User ${userId} no matches`);
+    logger.debug("worker user no matches", { userId });
     return false;
   }
 
@@ -159,7 +167,7 @@ async function processUser(
     rotationDate
   );
   if (unsentUuids.length === 0) {
-    console.log(`[worker] User ${userId} all matches already sent`);
+    logger.debug("worker user all matches already sent", { userId });
     return false;
   }
 
@@ -170,7 +178,7 @@ async function processUser(
     .filter((s): s is Exclude<typeof s, undefined> => s !== undefined);
 
   if (matchedSkins.length === 0) {
-    console.log(`[worker] User ${userId} no skins found in catalog`);
+    logger.debug("worker user no skins found in catalog", { userId });
     return false;
   }
 
@@ -187,6 +195,6 @@ async function processUser(
   // 9. Record sent notifications (only after successful email)
   await deps.notificationsRepo.insert(userId, unsentUuids, rotationDate);
 
-  console.log(`[worker] User ${userId} notified about ${matchedSkins.length} skin(s)`);
+  logger.info("worker user notified", { userId, count: matchedSkins.length });
   return true;
 }
