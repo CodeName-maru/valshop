@@ -1,5 +1,25 @@
 import { vi } from "vitest";
 import "@testing-library/jest-dom";
+import { setupServer } from "msw/node";
+import { defaultRiotHandlers } from "./tests/critical-path/_msw/riot-handlers";
+
+// MSW server setup for API mocking
+export const mswServer = setupServer(...defaultRiotHandlers);
+
+// Setup before all tests
+beforeAll(() => {
+  mswServer.listen({ onUnhandledRequest: "error" });
+});
+
+// Reset handlers after each test
+afterEach(() => {
+  mswServer.resetHandlers();
+});
+
+// Cleanup after all tests
+afterAll(() => {
+  mswServer.close();
+});
 
 // localStorage mock for jsdom environment
 Object.defineProperty(window, "localStorage", {
