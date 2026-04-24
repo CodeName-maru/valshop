@@ -8,7 +8,7 @@
 
 import { cookies } from "next/headers";
 import type { SessionPayload } from "./types";
-import { decryptSession } from "./crypto";
+import { decryptSession, isSessionExpired } from "./crypto";
 
 /**
  * 세션이 필요한 페이지에서 호출.
@@ -29,8 +29,7 @@ export async function requireSession(): Promise<SessionPayload> {
     throw new Error("UNAUTHENTICATED");
   }
 
-  const nowSec = Math.floor(Date.now() / 1000);
-  if (payload.expiresAt <= nowSec) {
+  if (isSessionExpired(payload)) {
     throw new Error("UNAUTHENTICATED");
   }
 

@@ -5,7 +5,7 @@
  * 복호화 실패/만료/쿠키 부재 → null (호출부 graceful 처리).
  */
 
-import { decryptSession } from "@/lib/session/crypto";
+import { decryptSession, isSessionExpired } from "@/lib/session/crypto";
 
 const SESSION_COOKIE_NAME = "session";
 
@@ -59,8 +59,7 @@ export async function readSessionFromCookies(
 
   try {
     const payload = await decryptSession(session);
-    const nowSec = Math.floor(Date.now() / 1000);
-    if (payload.expiresAt <= nowSec) {
+    if (isSessionExpired(payload)) {
       return null;
     }
     return payload.puuid;

@@ -58,6 +58,15 @@ export async function decryptSession(ciphertext: string): Promise<SessionPayload
 }
 
 /**
+ * 세션 만료 여부 (expiresAt 은 Unix seconds 기준).
+ * guard/reader 중복을 제거해 단위(sec vs ms) drift 를 방지한다.
+ */
+export function isSessionExpired(payload: SessionPayload, nowMs: number = Date.now()): boolean {
+  const nowSec = Math.floor(nowMs / 1000);
+  return payload.expiresAt <= nowSec;
+}
+
+/**
  * 테스트 전용 캐시 리셋 헬퍼. production 에서는 no-op.
  */
 export function resetKeyCacheForTest(): void {

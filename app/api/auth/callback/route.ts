@@ -84,8 +84,14 @@ export async function handleAuthCallback(input: AuthCallbackInput): Promise<Next
     region: "kr", // Fixed for KR region only
   };
 
-  // 4. Encrypt session payload
-  const sessionCiphertext = await encryptSession(payload);
+  // 4. Encrypt session payload — env 부재/키 로드 실패 시 세부 메시지 숨김 (환경변수 이름 누출 방지)
+  let sessionCiphertext: string;
+  try {
+    sessionCiphertext = await encryptSession(payload);
+  } catch (error) {
+    console.error("[auth/callback] Session encryption failed:", error instanceof Error ? error.name : "Unknown");
+    return NextResponse.redirect(redirectUrl("/login?error=upstream"), 302);
+  }
 
   // 5. Build response with session cookie and clear auth_state
   const response = NextResponse.redirect(redirectUrl("/dashboard"), 302);
