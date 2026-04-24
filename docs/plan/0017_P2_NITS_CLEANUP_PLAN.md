@@ -12,11 +12,11 @@
 | 1. 호출처 일괄 리네임 범위 | `lib/riot/fetcher.ts` 의 `export` 만 변경하고, 직접 import 한 `lib/auth/callback.ts` 만 수정 (현재 prod 호출처 1곳뿐) | grep 결과 prod 코드 호출처는 callback.ts 1개 파일. 워크트리/테스트 영향 없음. |
 | 1. 하위호환 alias 유지 여부 | **유지하지 않음** (`export const defaultRiotFetcher = httpRiotFetcher` 같은 alias 미생성) | 호출처가 1곳이고 단일 PR 로 정리되므로 deprecated alias 는 잡음. **NFR: Maintainability** |
 | 2. `updated_at` 트리거 구현 | Supabase 표준 확장 `moddatetime` 을 사용 (`create extension if not exists moddatetime`) | Postgres 표준 + Supabase 공식 권장. 직접 `plpgsql` 함수 작성보다 선언적이고 테스트 단순. **NFR: Operability** |
-| 2. 트리거 마이그레이션 파일 | 신규 `supabase/migrations/0005_user_tokens_updated_at_trigger.sql` 생성 (기존 `0001_user_tokens.sql` 미수정) | Migration immutability — 적용된 마이그레이션을 사후 수정하면 환경 간 drift 발생. **NFR: Operability** |
+| 2. 트리거 마이그레이션 파일 | 신규 `supabase/migrations/0007_user_tokens_updated_at_trigger.sql` 생성 (기존 `0001_user_tokens.sql` 미수정) | Migration immutability — 적용된 마이그레이션을 사후 수정하면 환경 간 drift 발생. **NFR: Operability** |
 | 3. Countdown `onComplete` API | `onComplete?: () => void` prop 추가, `remaining === 0` 도달 시 **정확히 1회**만 호출 (ref 가드) | 중복 호출 방지가 핵심 요구. React strict-mode + 500ms tick 환경에서 idempotent 보장 필요. **NFR: Maintainability** |
 | 3. KST midnight 모드의 `onComplete` 동작 | `endsAtEpochMs` 미지정 (KST midnight 모드) 인 경우 `onComplete` 미지원 (호출 안 함) | midnight 모드는 자정 통과 후 자동으로 다음 자정을 카운트하므로 "완료" 개념이 없음. 콜백은 명시적 endsAt 모드 한정. **NFR: Maintainability** |
 | 4. wishlist 중복 인덱스 처리 | `idx_wishlist_user(user_id)` 는 PK `(user_id, skin_uuid)` 의 **leftmost prefix** 와 동일 → 중복으로 판단, drop | Postgres B-tree 는 multi-column PK 의 좌측 prefix 만으로도 single-column lookup 가능. 중복 인덱스는 write amplification + 저장 공간 낭비. **NFR: Operability, Maintainability** |
-| 4. drop 마이그레이션 파일 | 신규 `supabase/migrations/0006_drop_wishlist_dup_index.sql` 생성 | Migration immutability 동일 근거. |
+| 4. drop 마이그레이션 파일 | 신규 `supabase/migrations/0008_drop_wishlist_dup_index.sql` 생성 | Migration immutability 동일 근거. |
 
 ### 가정사항
 
@@ -119,7 +119,7 @@ it("given_user_tokens_행_when_업데이트_then_updated_at_자동_갱신", asyn
 
 ### 구현 항목
 
-**파일**: `supabase/migrations/0005_user_tokens_updated_at_trigger.sql` (신규)
+**파일**: `supabase/migrations/0007_user_tokens_updated_at_trigger.sql` (신규)
 ```sql
 -- Migration 0005: user_tokens.updated_at 자동 갱신 트리거
 -- Plan 0017 P2-#2
@@ -242,7 +242,7 @@ it("given_user_id_조회_when_explain_then_pkey_index_scan_사용", async () => 
 
 ### 구현 항목
 
-**파일**: `supabase/migrations/0006_drop_wishlist_dup_index.sql` (신규)
+**파일**: `supabase/migrations/0008_drop_wishlist_dup_index.sql` (신규)
 ```sql
 -- Migration 0006: wishlist 중복 인덱스 제거
 -- Plan 0017 P2-#4
