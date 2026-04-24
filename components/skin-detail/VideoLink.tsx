@@ -25,7 +25,7 @@ export function VideoLink({ url }: VideoLinkProps) {
 
   return (
     <a
-      href={url}
+      href={url ?? undefined}
       target="_blank"
       rel="noopener noreferrer nofollow"
       className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 underline"

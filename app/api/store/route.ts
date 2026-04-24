@@ -43,6 +43,10 @@ class DefaultRiotFetcher implements RiotFetcher {
 
     return response.json();
   }
+
+  async fetch(url: string, options: RequestInit): Promise<Response> {
+    return fetch(url, options);
+  }
 }
 
 export const dynamic = "force-dynamic";

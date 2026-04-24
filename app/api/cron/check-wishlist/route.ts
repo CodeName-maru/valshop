@@ -52,9 +52,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // 5. Create Resend client
     const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resendClient = new Resend(process.env.RESEND_API_KEY);
 
-    // 6. Run worker
+    // 6. Create Resend adapter — v6 SDK 는 { data, error } 를 반환한다.
+    //    error 를 무시하거나 top-level .id 를 믿으면 발송 실패가 worker 에서 silent 성공으로 둔갑한다.
+    const resend = {
+      emails: {
+        send: async (params: { to: string | string[]; subject: string; html: string; text?: string }): Promise<{ id: string }> => {
+          const { data, error } = await resendClient.emails.send(params as any);
+          if (error) {
+            throw new Error(`Resend send failed: ${error.name ?? "unknown"} — ${error.message ?? ""}`);
+          }
+          if (!data?.id) {
+            throw new Error("Resend send returned no message id");
+          }
+          return { id: data.id };
+        },
+      },
+    };
+
+    // 7. Run worker
     const result = await runWorker({
       userTokensRepo: createUserTokensRepo(supabase),
       wishlistRepo: createWishlistRepo(supabase),

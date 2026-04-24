@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { handleAuthCallback } from "../route";
+import { handleAuthCallback } from "@/lib/auth/callback";
 
 export async function POST(request: NextRequest) {
   try {

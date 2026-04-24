@@ -46,7 +46,6 @@ export const tokenVault = new NoopTokenVault();
 // Phase 2: Server-side token vault for worker use
 // ============================================================================
 
-import type { CryptoKey } from "crypto";
 import { decrypt } from "@/lib/crypto/aes-gcm";
 
 /**

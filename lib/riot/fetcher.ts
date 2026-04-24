@@ -34,4 +34,39 @@ export class RiotApiError extends Error {
  */
 export interface RiotFetcher {
   get(url: string, session: SessionPayload, clientVersion: string): Promise<unknown>;
+  fetch(url: string, options: RequestInit): Promise<Response>;
 }
+
+/**
+ * Default RiotFetcher implementation
+ */
+export const defaultRiotFetcher: RiotFetcher = {
+  async get(url: string, session: SessionPayload, clientVersion: string): Promise<unknown> {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+        "X-Riot-ClientPlatform": "ew0KCSJwbGF0Zm9ybVR5cGUiOiJQQyIsDQoJInBsYXRmb3JtT3MiOiJXaW5kb3dzIiwNCgkicGxhdGZvcm1DaGFubmVsSWQiOiJlYzZlMzliZS00YzY1LTQ1YmMtODhlZi0wY2YyNzdjMTg1NmMiLA0NCgkicGxhdGZvcm1DaGFubmVsTmFtZSI6IkxpdmUiLA0KCQZpc2xhdGlvbiI6IiINCn0=",
+        "X-Riot-ClientVersion": clientVersion,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new RiotApiError("UNAUTHENTICATED", "Unauthorized");
+      }
+      if (response.status === 429) {
+        throw new RiotApiError("RIOT_RATE_LIMITED", "Rate limited");
+      }
+      if (response.status >= 500) {
+        throw new RiotApiError("RIOT_5XX", "Riot server error");
+      }
+      throw new RiotApiError("INTERNAL_ERROR", `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  async fetch(url: string, options: RequestInit): Promise<Response> {
+    return fetch(url, options);
+  },
+};
