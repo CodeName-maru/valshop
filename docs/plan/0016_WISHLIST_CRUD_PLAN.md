@@ -52,6 +52,8 @@ PRD FR-7 의 위시리스트 CRUD 가 미구현인 상태를 해소한다. 본 p
 - **카탈로그 소스**: `lib/valorant-api/catalog.ts` 가 존재하여 `Skin[]` 을 반환한다. 검색 페이지는 이를 client-side fetch (`/api/catalog` 또는 ISR HTML 의 inline JSON) 로 1회 수신. catalog 자체는 본 plan 범위 밖.
 - **Plan 0013 워커**: 본 plan 의 RLS 와 테이블 스키마는 Plan 0013 의 `/api/cron/check-wishlist` 가 Service Role 로 전체 스캔하는 동작을 막지 않는다. `notifications_sent` 는 본 plan 과 무관 (별도 테이블).
 - **Rate limit**: in-memory token bucket 은 단일 lambda 인스턴스 내에서만 동작. Vercel cold start / multi-region 에서 완벽한 글로벌 제한은 보장되지 않으며, 이는 Cost NFR 우선의 의도된 trade-off.
+- **1000 한도는 best-effort (TOCTOU)**: `repo.add` 의 `countFor → exists check → insert` 흐름은 트랜잭션 락 없이 진행되므로, 동일 user 의 동시 POST 가 999↔1000 경계를 겹쳐 통과하면 미세하게 1000 을 초과할 수 있다 (race window). 1차 완충은 rate-limit 10/sec, 실용 영향은 ~50 동접 + 단일 클라이언트 시나리오에서 무시 가능. 정확한 강제는 DB CHECK/trigger 가 필요하나 현 단계에서는 over-engineering 으로 판단해 deferred. 운영 시 wishlist count 분포 모니터링 권장 (Supabase Dashboard).
+- **RLS integration 테스트 — Test 4-2 부분 deferred**: `tests/integration/wishlist/rls.test.ts` 의 cross-user select / insert reject / anon / service role / smoke perf 4건은 실 Supabase Auth user (`auth.admin.createUser` + `signInWithPassword`) 로 JWT 발급해 격리를 직접 검증한다. 단 "1000 rows × 50 users p95 < 100ms" 부하 측정은 vitest 단일 latency 로는 의미가 약하고 k6/autocannon 등 별도 도구가 필요하므로 50-row smoke 로 축소·deferred (테스트 본문에 주석 명시).
 
 ---
 
