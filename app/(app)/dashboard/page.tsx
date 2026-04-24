@@ -8,6 +8,7 @@
  */
 
 import { LogoutButton } from "@/components/LogoutButton";
+import { Countdown } from "@/components/Countdown";
 import DashboardClient from "./DashboardClient";
 
 export default function DashboardPage() {
@@ -16,7 +17,13 @@ export default function DashboardPage() {
       <header className="border-b bg-white">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">Valshop</h1>
-          <LogoutButton />
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-xs text-slate-500">다음 상점 갱신까지</p>
+              <Countdown />
+            </div>
+            <LogoutButton />
+          </div>
         </div>
       </header>
       <main className="container mx-auto px-4 py-8">
