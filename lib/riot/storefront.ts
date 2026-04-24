@@ -125,7 +125,7 @@ export async function getTodayStore(
   const storefrontUrl = `https://pd.${region}.a.pvp.net/store/v2/storefront/${session.puuid}`;
 
   // RiotFetcher를 통한 storefront 호출
-  const storefrontJson = await deps.fetcher.get(storefrontUrl, session);
+  const storefrontJson = await deps.fetcher.get(storefrontUrl, session, clientVersion);
 
   // 파싱
   const { offers, rotationEndsAt } = parseStorefront(storefrontJson);

@@ -14,7 +14,7 @@ import { RiotFetcher, RiotApiError, type RiotErrorCode } from "@/lib/riot/fetche
  * 실제 재시도/에러 매핑 로직은 Plan 0006에서 구현
  */
 class DefaultRiotFetcher implements RiotFetcher {
-  async get(url: string, session: Awaited<ReturnType<typeof import("@/lib/session/guard").getSession>>): Promise<unknown> {
+  async get(url: string, session: Awaited<ReturnType<typeof import("@/lib/session/guard").getSession>>, clientVersion: string): Promise<unknown> {
     if (!session) {
       throw new RiotApiError("UNAUTHENTICATED", "No session");
     }
@@ -24,6 +24,7 @@ class DefaultRiotFetcher implements RiotFetcher {
         "Authorization": `Bearer ${session.accessToken}`,
         "X-Riot-Entitlements-JWT": session.entitlementsJwt,
         "X-Riot-ClientPlatform": "UE0xLZC0wMTc4NzYwNzYyODA0NzMyOWRjNTU0MTA3ZmJlMGM",
+        "X-Riot-ClientVersion": clientVersion,
       },
     });
 

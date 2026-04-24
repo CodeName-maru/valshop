@@ -14,12 +14,13 @@ import { RiotFetcher, RiotApiError } from "@/lib/riot/fetcher";
  * 기본 RiotFetcher 구현체 (서버사이드)
  */
 class ServerRiotFetcher implements RiotFetcher {
-  async get(url: string, session: Awaited<ReturnType<typeof requireSession>>): Promise<unknown> {
+  async get(url: string, session: Awaited<ReturnType<typeof requireSession>>, clientVersion: string): Promise<unknown> {
     const response = await fetch(url, {
       headers: {
         "Authorization": `Bearer ${session.accessToken}`,
         "X-Riot-Entitlements-JWT": session.entitlementsJwt,
         "X-Riot-ClientPlatform": "UE0xLZC0wMTc4NzYwNzYyODA0NzMyOWRjNTU0MTA3ZmJlMGM",
+        "X-Riot-ClientVersion": clientVersion,
       },
     });
 

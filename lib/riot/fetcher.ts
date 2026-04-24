@@ -33,5 +33,5 @@ export class RiotApiError extends Error {
  * Plan 0006에서 정의하며, 재시도/헤더/에러 매핑을 담당
  */
 export interface RiotFetcher {
-  get(url: string, session: SessionPayload): Promise<unknown>;
+  get(url: string, session: SessionPayload, clientVersion: string): Promise<unknown>;
 }
