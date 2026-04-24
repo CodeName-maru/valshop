@@ -130,12 +130,12 @@ export function classifyAuthResponse(
  * Retry-After 헤더를 파싱하여 밀리초 단위로 반환합니다.
  * - 초 단위 숫자: 해당 초를 ms 로 변환
  * - HTTP-date: 파싱하여 차이를 ms 로 변환 (구현 생략, 기본값 사용)
- * - null 또는 파싱 실패: 기본값 200ms
- * - 상한: 10초 (10000ms)
+ * - null 또는 파싱 실패: 기본값 300ms
+ * - 상한: 3초 (3000ms)
  */
 export function parseRetryAfter(header: string | null): number {
-  const DEFAULT_MS = 200;
-  const MAX_MS = 10000;
+  const DEFAULT_MS = 300;
+  const MAX_MS = 3000;
 
   if (!header) {
     return DEFAULT_MS;
