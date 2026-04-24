@@ -29,7 +29,8 @@ export interface WorkerResult {
  */
 export interface WorkerDeps {
   userTokensRepo: UserTokensRepo;
-  wishlistRepo: WishlistRepo;
+  // Worker 는 listFor 만 사용 — Plan 0016 의 풀 CRUD 를 강제하지 않도록 narrow.
+  wishlistRepo: Pick<WishlistRepo, "listFor">;
   notificationsRepo: NotificationsRepo;
   storefrontClient: StorefrontClient;
   catalog: Catalog;

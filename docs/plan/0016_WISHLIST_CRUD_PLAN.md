@@ -386,37 +386,37 @@ Phase 5 (UI) ─────── 5-1..5-4 테스트 ──→ 5-impl-* (toggle
 
 | # | 항목 | 상태 | 비고 |
 |---|------|------|------|
-| 1-1 | 검색 필터 순수 함수 테스트 | ⬜ 미착수 | `tests/critical-path/wishlist/search-filter.test.ts` |
-| 1-2 | WishlistRepo 포트 계약 테스트 | ⬜ 미착수 | `tests/critical-path/wishlist/repo-contract.test.ts` |
-| 1-impl | `lib/domain/wishlist.ts` 구현 | ⬜ 미착수 | 포트 + filterSkinsByQuery + in-memory fake + LIMIT |
-| 2-1 | 인증 경계 테스트 | ⬜ 미착수 | session 부재/위조/lookup 실패 |
-| 2-2 | GET happy path 테스트 | ⬜ 미착수 | |
-| 2-3 | POST 본인성 + 멱등 테스트 | ⬜ 미착수 | body 위조 차단 포함 |
-| 2-4 | POST 1000 한도 테스트 | ⬜ 미착수 | Scale NFR |
-| 2-5 | Supabase 장애 503 테스트 | ⬜ 미착수 | Availability NFR |
-| 2-6 | DELETE 테스트 | ⬜ 미착수 | path param |
-| 2-7 | Rate limit 테스트 | ⬜ 미착수 | best-effort |
-| 2-impl-adapter | `lib/supabase/wishlist-repo.ts` | ⬜ 미착수 | |
-| 2-impl-admin | `lib/supabase/admin.ts` (또는 재사용) | ⬜ 미착수 | Service Role client |
-| 2-impl-resolve | `lib/wishlist/resolve-user.ts` | ⬜ 미착수 | puuid → user_id |
-| 2-impl-ratelimit | `lib/wishlist/rate-limit.ts` | ⬜ 미착수 | token bucket |
-| 2-impl-route-collection | `app/api/wishlist/route.ts` | ⬜ 미착수 | GET / POST |
-| 2-impl-route-item | `app/api/wishlist/[skinId]/route.ts` | ⬜ 미착수 | DELETE |
-| 3-1 | 스키마 스냅샷 테스트 | ⬜ 미착수 | integration |
-| 3-2 | 1000 레코드 p95 테스트 | ⬜ 미착수 | Scale NFR |
-| 3-3 | 컬럼 최소성 테스트 | ⬜ 미착수 | Compliance NFR |
-| 3-impl-migration | `supabase/migrations/0005_wishlist.sql` | ⬜ 미착수 | idempotent |
-| 3-impl-rls | `supabase/migrations/0006_wishlist_rls.sql` | ⬜ 미착수 | 3개 policy |
-| 4-1 | tenant 격리 테스트 | ⬜ 미착수 | Security NFR 핵심 |
-| 4-2 | Service Role 우회 테스트 | ⬜ 미착수 | Plan 0013 호환 |
-| 4-3 | pg_policies DDL 존재 테스트 | ⬜ 미착수 | |
-| 5-1 | 검색 페이지 테스트 | ⬜ 미착수 | @testing-library |
-| 5-2 | 토글 낙관적 UI 테스트 | ⬜ 미착수 | |
-| 5-3 | API 실패 rollback 테스트 | ⬜ 미착수 | Availability NFR |
-| 5-4 | 위시리스트 페이지 테스트 | ⬜ 미착수 | empty/401 포함 |
-| 5-impl-toggle | `components/WishlistToggle.tsx` | ⬜ 미착수 | |
-| 5-impl-card | `components/SkinCard.tsx` action prop 확장 | ⬜ 미착수 | |
-| 5-impl-search | `app/(app)/search/page.tsx` | ⬜ 미착수 | |
-| 5-impl-wishlist | `app/(app)/wishlist/page.tsx` | ⬜ 미착수 | |
+| 1-1 | 검색 필터 순수 함수 테스트 | ✅ 완료 | `tests/critical-path/wishlist/search-filter.test.ts` |
+| 1-2 | WishlistRepo 포트 계약 테스트 | ✅ 완료 | `tests/critical-path/wishlist/repo-contract.test.ts` |
+| 1-impl | `lib/domain/wishlist.ts` 구현 | ✅ 완료 | 포트 + filterSkinsByQuery + in-memory fake + LIMIT |
+| 2-1 | 인증 경계 테스트 | ✅ 완료 | session 부재/위조/lookup 실패 |
+| 2-2 | GET happy path 테스트 | ✅ 완료 | |
+| 2-3 | POST 본인성 + 멱등 테스트 | ✅ 완료 | body 위조 차단 포함 |
+| 2-4 | POST 1000 한도 테스트 | ✅ 완료 | Scale NFR |
+| 2-5 | Supabase 장애 503 테스트 | ✅ 완료 | Availability NFR |
+| 2-6 | DELETE 테스트 | ✅ 완료 | path param |
+| 2-7 | Rate limit 테스트 | ✅ 완료 | best-effort |
+| 2-impl-adapter | `lib/supabase/wishlist-repo.ts` | ✅ 완료 | |
+| 2-impl-admin | `lib/supabase/admin.ts` (또는 재사용) | ✅ 완료 | Service Role client |
+| 2-impl-resolve | `lib/wishlist/resolve-user.ts` | ✅ 완료 | puuid → user_id |
+| 2-impl-ratelimit | `lib/wishlist/rate-limit.ts` | ✅ 완료 | token bucket |
+| 2-impl-route-collection | `app/api/wishlist/route.ts` | ✅ 완료 | GET / POST |
+| 2-impl-route-item | `app/api/wishlist/[skinId]/route.ts` | ✅ 완료 | DELETE |
+| 3-1 | 스키마 스냅샷 테스트 | ✅ 완료 | integration |
+| 3-2 | 1000 레코드 p95 테스트 | ✅ 완료 | Scale NFR |
+| 3-3 | 컬럼 최소성 테스트 | ✅ 완료 | Compliance NFR |
+| 3-impl-migration | `supabase/migrations/0005_wishlist.sql` | ✅ 완료 | idempotent |
+| 3-impl-rls | `supabase/migrations/0006_wishlist_rls.sql` | ✅ 완료 | 3개 policy |
+| 4-1 | tenant 격리 테스트 | ✅ 완료 | Security NFR 핵심 |
+| 4-2 | Service Role 우회 테스트 | ✅ 완료 | Plan 0013 호환 |
+| 4-3 | pg_policies DDL 존재 테스트 | ✅ 완료 | |
+| 5-1 | 검색 페이지 테스트 | ✅ 완료 | @testing-library |
+| 5-2 | 토글 낙관적 UI 테스트 | ✅ 완료 | |
+| 5-3 | API 실패 rollback 테스트 | ✅ 완료 | Availability NFR |
+| 5-4 | 위시리스트 페이지 테스트 | ✅ 완료 | empty/401 포함 |
+| 5-impl-toggle | `components/WishlistToggle.tsx` | ✅ 완료 | |
+| 5-impl-card | `components/SkinCard.tsx` action prop 확장 | ✅ 완료 | |
+| 5-impl-search | `app/(app)/search/page.tsx` | ✅ 완료 | |
+| 5-impl-wishlist | `app/(app)/wishlist/page.tsx` | ✅ 완료 | |
 
-**상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
+**상태 범례**: ✅ 완료 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
