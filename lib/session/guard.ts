@@ -1,34 +1,40 @@
 /**
  * Session Guard
- * 세션 확인 및 리다이렉트 유틸리티
- * Plan 0002 (FR-1/FR-2)에서 구현된 것으로 가정
+ *
+ * Plan 0011: AES-GCM 복호화 배선.
+ * - 쿠키 부재 / 복호화 실패(레거시 평문 포함) / 만료 → UNAUTHENTICATED throw
+ * - 성공 → SessionPayload 반환
  */
 
 import { cookies } from "next/headers";
 import type { SessionPayload } from "./types";
+import { decryptSession } from "./crypto";
 
 /**
- * 세션이 필요한 페이지에서 호출
- * 세션이 없으면 /login으로 리다이렉트
- * MVP: 간단한 구현 (Phase 2에서 암호화 적용)
+ * 세션이 필요한 페이지에서 호출.
+ * 실패 시 Error("UNAUTHENTICATED") throw (호출부 redirect 위임).
  */
 export async function requireSession(): Promise<SessionPayload> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("session");
 
   if (!sessionCookie) {
-    // Next.js redirect는 Error를 throw해서 처리
     throw new Error("UNAUTHENTICATED");
   }
 
-  // MVP: 실제 복호화 없이 더미 값 반환
-  // Phase 2에서는 AES-GCM 복호화 적용
+  let payload: SessionPayload;
   try {
-    const decoded = JSON.parse(atob(sessionCookie.value));
-    return decoded as SessionPayload;
+    payload = await decryptSession(sessionCookie.value);
   } catch {
     throw new Error("UNAUTHENTICATED");
   }
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (payload.expiresAt <= nowSec) {
+    throw new Error("UNAUTHENTICATED");
+  }
+
+  return payload;
 }
 
 /**

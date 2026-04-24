@@ -1,20 +1,20 @@
 /**
  * Session Cookie Builder
- * NOTE: This is owned by Plan 0002. This is a temporary stub for Plan 0001 to proceed.
- * Plan 0002 will replace this with the full implementation.
+ *
+ * Plan 0011: AES-GCM 암호화 배선 완료.
+ * payload 를 `encryptSession()` 로 암호화한 뒤 Set-Cookie 헤더를 조립한다.
  */
 
 import type { SessionPayload } from "./types";
+import { encryptSession } from "./crypto";
 
 /**
- * Build Set-Cookie header value for session cookie
- * Max-Age is dynamically calculated from expiresAt
+ * Build Set-Cookie header value for session cookie.
+ * Max-Age 는 expiresAt 과 현재 시각 차이로 동적 계산한다.
+ * 반환값은 AES-GCM 암호문(base64) 을 담은 `session=<ct>; ...` 헤더.
  */
-export function buildSessionCookie(payload: SessionPayload): string {
+export async function buildSessionCookie(payload: SessionPayload): Promise<string> {
   const maxAge = Math.max(0, payload.expiresAt - Math.floor(Date.now() / 1000));
-
-  // Temporary stub - Plan 0002 will implement actual cookie building with encrypted payload
-  const value = Buffer.from(JSON.stringify(payload)).toString("base64");
-
+  const value = await encryptSession(payload);
   return `session=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
 }

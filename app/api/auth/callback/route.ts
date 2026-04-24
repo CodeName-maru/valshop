@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeAccessTokenForEntitlements, fetchPuuid, withTimeout } from "@/lib/riot/auth";
-import { encryptSession } from "@/lib/crypto/aes-gcm";
+import { encryptSession } from "@/lib/session/crypto";
 import { buildSessionCookie } from "@/lib/session/cookie";
 import type { SessionPayload } from "@/lib/session/types";
 import { defaultRiotFetcher } from "@/lib/riot/fetcher";
@@ -79,7 +79,6 @@ export async function handleAuthCallback(input: AuthCallbackInput): Promise<Next
   const payload: SessionPayload = {
     puuid,
     accessToken,
-    refreshToken: "", // Riot implicit grant doesn't provide refresh token
     entitlementsJwt,
     expiresAt,
     region: "kr", // Fixed for KR region only

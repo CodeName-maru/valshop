@@ -1,6 +1,11 @@
 /**
  * 쿠키 관련 유틸리티
+ *
+ * Plan 0011: AES-GCM 배선 — session 쿠키 복호화 후 puuid(userId semantic) 반환.
+ * 복호화 실패/만료/쿠키 부재 → null (호출부 graceful 처리).
  */
+
+import { decryptSession } from "@/lib/session/crypto";
 
 const SESSION_COOKIE_NAME = "session";
 
@@ -22,22 +27,26 @@ export function buildLogoutCookie(): string {
 }
 
 /**
- * 요청에서 session 쿠키를 읽어 userId를 복원
- * MVP에서는 구현이 간단하며, Phase 2에서 암호화된 토큰 복원 로직이 추가됨
+ * 요청의 Cookie 헤더에서 session 쿠키를 읽어 userId(=puuid) 를 복원.
+ *
+ * - 쿠키 부재 → null
+ * - 복호화 실패(레거시 평문/tamper/wrong key) → null (crash 금지, 재로그인 유도)
+ * - 만료(expiresAt ≤ now) → null
  */
-export function readSessionFromCookies(
+export async function readSessionFromCookies(
   cookieHeader: string | null
-): string | null {
+): Promise<string | null> {
   if (!cookieHeader) {
     return null;
   }
 
   const cookies = cookieHeader.split(";").reduce<Record<string, string>>(
     (acc, pair) => {
-      const [key, value] = pair.trim().split("=");
-      if (key && value) {
-        acc[key] = value;
-      }
+      const idx = pair.indexOf("=");
+      if (idx === -1) return acc;
+      const key = pair.slice(0, idx).trim();
+      const value = pair.slice(idx + 1).trim();
+      if (key) acc[key] = value;
       return acc;
     },
     {}
@@ -48,13 +57,13 @@ export function readSessionFromCookies(
     return null;
   }
 
-  // MVP: 실제 암호화/복호화는 Plan 0002에서 구현
-  // 여기서는 더미 userId를 반환 (실제로는 JWT 디코딩 등 필요)
   try {
-    // 간단한 base64 디코딩 시도 (실제 구현에서는 안전한 JWT 파서 사용)
-    const decoded = atob(session);
-    const parsed = JSON.parse(decoded);
-    return parsed.userId || null;
+    const payload = await decryptSession(session);
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (payload.expiresAt <= nowSec) {
+      return null;
+    }
+    return payload.puuid;
   } catch {
     return null;
   }
