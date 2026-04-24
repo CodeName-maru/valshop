@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- data-fan-made="true" VAL-Shop 팬메이드 아이콘. Riot Games 공식 자산 미사용. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" data-fan-made="true">
+  <rect width="512" height="512" fill="#ff4655"/>
+  <g fill="#0f1923" font-family="'Arial Black','Helvetica Neue',Arial,sans-serif" font-weight="900" text-anchor="middle">
+    <text x="256" y="320" font-size="260" letter-spacing="-10">VS</text>
+  </g>
+</svg>
