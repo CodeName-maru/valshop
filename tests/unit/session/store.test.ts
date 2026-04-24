@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import type { UserTokensRepo, UpsertTokensInput } from "@/lib/supabase/user-tokens-repo";
+import type { UserTokensRepo } from "@/lib/supabase/user-tokens-repo";
 import type { SessionTokens } from "@/lib/session/types";
 
 // Mock repo factory function
@@ -238,8 +238,8 @@ describe("Plan 0020 Phase 2: store.ts", () => {
     vi.mocked(reauthWithSsid).mockResolvedValue({
       kind: "ok",
       accessToken: "new-access-token",
-      expiresIn: 3600,
-    });
+      idToken: "test-id-token",
+    } as any);
     vi.mocked(exchangeEntitlements).mockResolvedValue("new-entitlements-jwt");
 
     const result = await store.resolve(sessionId);

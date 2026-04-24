@@ -7,9 +7,11 @@
 
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { createUserTokensRepo, type UserTokensRepo } from "@/lib/supabase/user-tokens-repo";
+import type { UserTokensRow } from "@/lib/supabase/types";
 import type { SessionTokens, ResolvedSession } from "./types";
 import { reauthAccess } from "./reauth";
 import { encryptWithKey, getTokenKey, decryptWithKey, NEAR_EXPIRY_THRESHOLD_SEC, SESSION_TTL_SEC } from "./crypto";
+import { httpRiotFetcher } from "@/lib/riot/fetcher";
 
 /**
  * Plan 0020: Logger (임시 stub - plan 0024에서 대체)
@@ -70,12 +72,11 @@ type DecryptedRow = {
  *
  * 하나라도 복호화 실패 시 row 삭제 + null 반환
  */
-async function decryptRow(row: Record<string, unknown>): Promise<DecryptedRow | null> {
+async function decryptRow(row: UserTokensRow): Promise<DecryptedRow | null> {
   const key = await getTokenKey();
 
   // ssid_enc 복호화
-  const ssidEnc = row.ssid_enc as string;
-  const ssid = await decryptWithKey(ssidEnc, key);
+  const ssid = await decryptWithKey(row.ssid_enc, key);
   if (ssid === null) {
     logger.warn("[decryptRow] ssid_enc 복호화 실패, row 삭제", { sessionId: row.session_id });
     return null;
@@ -83,9 +84,8 @@ async function decryptRow(row: Record<string, unknown>): Promise<DecryptedRow | 
 
   // tdid_enc 복호화 (nullable)
   let tdid: string | null = null;
-  const tdidEnc = row.tdid_enc as string | null;
-  if (tdidEnc) {
-    const decrypted = await decryptWithKey(tdidEnc, key);
+  if (row.tdid_enc) {
+    const decrypted = await decryptWithKey(row.tdid_enc, key);
     if (decrypted === null) {
       logger.warn("[decryptRow] tdid_enc 복호화 실패, row 삭제", { sessionId: row.session_id });
       return null;
@@ -94,36 +94,32 @@ async function decryptRow(row: Record<string, unknown>): Promise<DecryptedRow | 
   }
 
   // access_token_enc 복호화
-  const accessTokenEnc = row.access_token_enc as string;
-  const accessToken = await decryptWithKey(accessTokenEnc, key);
+  const accessToken = await decryptWithKey(Buffer.from(row.access_token_enc).toString("base64"), key);
   if (accessToken === null) {
     logger.warn("[decryptRow] access_token_enc 복호화 실패, row 삭제", { sessionId: row.session_id });
     return null;
   }
 
   // entitlements_jwt_enc 복호화
-  const entitlementsJwtEnc = row.entitlements_jwt_enc as string;
-  const entitlementsJwt = await decryptWithKey(entitlementsJwtEnc, key);
+  const entitlementsJwt = await decryptWithKey(Buffer.from(row.entitlements_jwt_enc).toString("base64"), key);
   if (entitlementsJwt === null) {
     logger.warn("[decryptRow] entitlements_jwt_enc 복호화 실패, row 삭제", { sessionId: row.session_id });
     return null;
   }
 
   // session_expires_at 변환
-  const sessionExpiresAtDate = row.session_expires_at as Date;
-  const sessionExpiresAt = Math.floor(sessionExpiresAtDate.getTime() / 1000);
+  const sessionExpiresAt = Math.floor(row.session_expires_at.getTime() / 1000);
 
   // access_expires_at 변환 (실제 DB 컬럼명은 expires_at)
-  const accessExpiresAtDate = row.expires_at as Date;
-  const accessExpiresAt = Math.floor(accessExpiresAtDate.getTime() / 1000);
+  const accessExpiresAt = Math.floor(row.expires_at.getTime() / 1000);
 
   return {
-    puuid: row.puuid as string,
+    puuid: row.puuid,
     ssid,
     tdid,
     accessToken,
     entitlementsJwt,
-    region: row.region as string,
+    region: row.region,
     accessExpiresAt,
     sessionExpiresAt,
   };
@@ -245,8 +241,7 @@ export function createSessionStore(): SessionStore {
       const reauthResult = await reauthAccess(
         decrypted.ssid,
         decrypted.tdid,
-        decrypted.region,
-        { fetch: client.fetch.bind(client) }
+        httpRiotFetcher
       );
 
       if (reauthResult.kind === "expired") {

@@ -90,7 +90,10 @@ describe("Plan 0020 Phase 4: pending-jar.ts", () => {
 
     // Tamper: base64 디코딩 후 1바이트 변조
     const buffer = Buffer.from(blob, "base64");
-    buffer[buffer.length - 1] ^= 0xff;
+    if (buffer.length > 0) {
+      const lastIndex = buffer.length - 1;
+      buffer[lastIndex] ^= 0xff;
+    }
     const tampered = buffer.toString("base64");
 
     const decoded = await decodePendingJar(tampered);

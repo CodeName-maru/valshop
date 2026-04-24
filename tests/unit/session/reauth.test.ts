@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { RiotFetcher } from "@/lib/riot/fetcher";
+import type { SessionPayload } from "@/lib/session/types";
 
 // Mock auth-client at top level
 vi.mock("@/lib/riot/auth-client", () => ({
@@ -12,8 +13,17 @@ vi.mock("@/lib/riot/auth-client", () => ({
 }));
 
 describe("Plan 0020 Phase 3: reauth.ts", () => {
+  const mockSession: SessionPayload = {
+    puuid: "test-puuid",
+    accessToken: "test-access",
+    entitlementsJwt: "test-entitlements",
+    expiresAt: Math.floor(Date.now() / 1000) + 3600,
+    region: "kr",
+  };
+
   const mockFetcher: RiotFetcher = {
     fetch: vi.fn(),
+    get: vi.fn(), // Not used but required by interface
   };
 
   beforeEach(() => {
@@ -24,14 +34,15 @@ describe("Plan 0020 Phase 3: reauth.ts", () => {
     const { reauthWithSsid, exchangeEntitlements } = await import("@/lib/riot/auth-client");
     const { reauthAccess } = await import("@/lib/session/reauth");
 
+    // Mock reauthWithSsid → ok (RiotResult type with idToken)
     vi.mocked(reauthWithSsid).mockResolvedValue({
       kind: "ok",
       accessToken: "new-access-token",
-      expiresIn: 3600,
-    });
+      idToken: "test-id-token",
+    } as any);
     vi.mocked(exchangeEntitlements).mockResolvedValue("new-entitlements-jwt");
 
-    const result = await reauthAccess("valid-ssid", "tdid123", "kr", mockFetcher);
+    const result = await reauthAccess("valid-ssid", "tdid123", mockFetcher);
 
     expect(result).toEqual({
       kind: "ok",
@@ -48,7 +59,7 @@ describe("Plan 0020 Phase 3: reauth.ts", () => {
 
     vi.mocked(reauthWithSsid).mockResolvedValue({ kind: "expired" });
 
-    const result = await reauthAccess("invalid-ssid", null, "kr", mockFetcher);
+    const result = await reauthAccess("invalid-ssid", null, mockFetcher);
 
     expect(result).toEqual({ kind: "expired" });
   });
@@ -59,7 +70,7 @@ describe("Plan 0020 Phase 3: reauth.ts", () => {
 
     vi.mocked(reauthWithSsid).mockResolvedValue({ kind: "upstream" });
 
-    const result = await reauthAccess("ssid", null, "kr", mockFetcher);
+    const result = await reauthAccess("ssid", null, mockFetcher);
 
     expect(result).toEqual({ kind: "upstream" });
   });
@@ -71,11 +82,11 @@ describe("Plan 0020 Phase 3: reauth.ts", () => {
     vi.mocked(reauthWithSsid).mockResolvedValue({
       kind: "ok",
       accessToken: "access",
-      expiresIn: 3600,
-    });
+      idToken: "test-id-token",
+    } as any);
     vi.mocked(exchangeEntitlements).mockRejectedValue(new Error("Entitlements failed"));
 
-    const result = await reauthAccess("ssid", null, "kr", mockFetcher);
+    const result = await reauthAccess("ssid", null, mockFetcher);
 
     // entitlements 실패 → upstream 정규화
     expect(result).toEqual({ kind: "upstream" });
@@ -89,7 +100,7 @@ describe("Plan 0020 Phase 3: reauth.ts", () => {
     // timeout이 발생하면 upstream을 반환해야 함
     vi.mocked(reauthWithSsid).mockRejectedValue(new Error("AbortError"));
 
-    const result = await reauthAccess("ssid", null, "kr", mockFetcher);
+    const result = await reauthAccess("ssid", null, mockFetcher);
 
     // AbortError → upstream 정규화
     expect(result).toEqual({ kind: "upstream" });

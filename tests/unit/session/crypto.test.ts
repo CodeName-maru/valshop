@@ -70,7 +70,10 @@ describe("Plan 0020 Phase 1: crypto.ts 이중 키 + null 반환", () => {
 
     // Tamper: base64 디코딩 후 마지막 바이트 flip
     const buffer = Buffer.from(ciphertext, "base64");
-    buffer[buffer.length - 1] ^= 0xff;
+    if (buffer.length > 0) {
+      const lastIndex = buffer.length - 1;
+      buffer[lastIndex] ^= 0xff;
+    }
     const tampered = buffer.toString("base64");
 
     const decrypted = await decryptWithKey(tampered, key);
