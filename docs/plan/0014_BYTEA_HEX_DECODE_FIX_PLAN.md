@@ -348,29 +348,29 @@ Phase 1 (bytea 헬퍼)  ──→ Phase 2 (repo 통합)  ──┬──→ Phas
 
 | # | 항목 | 상태 | 비고 |
 |---|------|------|------|
-| 1-1 | parseBytea: \x hex → bytes | ⬜ 미착수 | |
-| 1-2 | parseBytea: base64 → bytes | ⬜ 미착수 | |
-| 1-3 | parseBytea: Uint8Array passthrough | ⬜ 미착수 | |
-| 1-4 | parseBytea: JSON Buffer shape | ⬜ 미착수 | |
-| 1-5 | parseBytea: invalid hex 거부 | ⬜ 미착수 | |
-| 1-6 | parseBytea: unknown shape 거부 | ⬜ 미착수 | |
-| 1-7 | parseBytea: 에러 sanitization | ⬜ 미착수 | Security |
-| 1-8 | encodeBytea: bytes → \x hex | ⬜ 미착수 | |
-| 1-impl | `lib/supabase/bytea.ts` 구현 | ⬜ 미착수 | |
-| 2-1 | repo.listActive 정규화 | ⬜ 미착수 | |
-| 2-2 | repo.get 정규화 | ⬜ 미착수 | |
-| 2-3 | repo: invalid bytea 시 BytEaParseError | ⬜ 미착수 | |
-| 2-4 | repo.upsert: Uint8Array → \x hex | ⬜ 미착수 | |
-| 2-5 | repo.markNeedsReauth 회귀 가드 | ⬜ 미착수 | |
-| 2-impl | `user-tokens-repo.ts` + `types.ts` 변경 | ⬜ 미착수 | |
-| 3-impl | `scripts/dev-demo-worker.ts` 표준 repo 로 리팩터 | ⬜ 미착수 | |
-| 4-1 | 통합: AES round-trip (get) | ⬜ 미착수 | 핵심 회귀 가드 |
-| 4-2 | 통합: listActive round-trip (2명) | ⬜ 미착수 | |
-| 4-3 | 통합: needs_reauth 필터링 | ⬜ 미착수 | |
-| 4-4 | 통합: runWorker happy-path | ⬜ 미착수 | |
-| 4-5 | 통합: runWorker 2회 idempotent | ⬜ 미착수 | |
-| 4-impl | 통합 테스트 인프라 + README + npm script | ⬜ 미착수 | |
-| 5-1 | 단위 mock fixture 가 Uint8Array 보장 | ⬜ 미착수 | |
-| 5-impl | `worker-check-wishlist.test.ts` fixture 갱신 | ⬜ 미착수 | |
+| 1-1 | parseBytea: \x hex → bytes | ✅ 완료 | |
+| 1-2 | parseBytea: base64 → bytes | ✅ 완료 | |
+| 1-3 | parseBytea: Uint8Array passthrough | ✅ 완료 | |
+| 1-4 | parseBytea: JSON Buffer shape | ✅ 완료 | |
+| 1-5 | parseBytea: invalid hex 거부 | ✅ 완료 | |
+| 1-6 | parseBytea: unknown shape 거부 | ✅ 완료 | |
+| 1-7 | parseBytea: 에러 sanitization | ✅ 완료 | Security |
+| 1-8 | encodeBytea: bytes → \x hex | ✅ 완료 | |
+| 1-impl | `lib/supabase/bytea.ts` 구현 | ✅ 완료 | |
+| 2-1 | repo.listActive 정규화 | ✅ 완료 | |
+| 2-2 | repo.get 정규화 | ✅ 완료 | |
+| 2-3 | repo: invalid bytea 시 BytEaParseError | ✅ 완료 | |
+| 2-4 | repo.upsert: Uint8Array → \x hex | ✅ 완료 | |
+| 2-5 | repo.markNeedsReauth 회귀 가드 | ✅ 완료 | |
+| 2-impl | `user-tokens-repo.ts` + `types.ts` 변경 | ✅ 완료 | |
+| 3-impl | `scripts/dev-demo-worker.ts` 표준 repo 로 리팩터 | ✅ 완료 | |
+| 4-1 | 통합: AES round-trip (get) | ✅ 완료 | 핵심 회귀 가드 |
+| 4-2 | 통합: listActive round-trip (2명) | ✅ 완료 | |
+| 4-3 | 통합: needs_reauth 필터링 | ✅ 완료 | |
+| 4-4 | 통합: runWorker happy-path | ✅ 완료 | |
+| 4-5 | 통합: runWorker 2회 idempotent | ✅ 완료 | |
+| 4-impl | 통합 테스트 인프라 + README + npm script | ✅ 완료 | |
+| 5-1 | 단위 mock fixture 가 Uint8Array 보장 | ✅ 완료 | |
+| 5-impl | `worker-check-wishlist.test.ts` fixture 갱신 | ✅ 완료 | |
 
-**상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
+**상태 범례**: ✅ 완료 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
