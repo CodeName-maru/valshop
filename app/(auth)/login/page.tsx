@@ -73,6 +73,14 @@ export default function LoginPage() {
         return "Authentication timed out. Please try again.";
       case "invalid_token":
         return "Invalid authentication token. Please try again.";
+      case "mfa_required":
+        return "2단계 인증이 필요합니다";
+      case "invalid_credentials":
+        return "로그인 정보가 올바르지 않습니다";
+      case "rate_limited":
+        return "너무 많은 요청을 보냈습니다";
+      case "upstream_unavailable":
+        return "서버에 일시적인 문제가 발생했습니다";
       default:
         return "An error occurred during login. Please try again.";
     }
