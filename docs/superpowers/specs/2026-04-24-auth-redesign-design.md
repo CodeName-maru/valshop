@@ -381,3 +381,82 @@ FR-R2 ──┴──────────►┴─► FR-R4 ──┬─► 
 - 이메일/이름 등 PUUID 외 PII 수집·저장
 - PW 강도 검증 (Riot 이 함)
 - Captcha bypass / Cloudflare 우회 (오히려 레퍼런스 코드가 걸린다면 본 설계 전면 재검토)
+
+---
+
+## 11. Amendment (2026-04-24 저녁) — α′ 정정
+
+### 배경
+
+초안 작성 후 techchrism valapidocs 와 4 개 OSS 레퍼런스(SkinPeek, staciax, Bbalduzz, ruzbyte) 의 **실제 auth 코드** 를 뜯어서 교차 검증한 결과, 본 spec 의 몇 가지 가정이 틀렸음을 확인하고 계약을 정정함. 큰 그림(A1~E1) 은 유지, 세부 스키마만 교정.
+
+### 틀린 가정 & 정정
+
+| 항목 | 초안 (틀림) | 실제 (정정) | 근거 |
+|---|---|---|---|
+| Preflight 메서드 | `GET authorize?...` | **`POST /api/v1/authorization`** JSON body | techchrism `auth-cookies` 엔드포인트 + staciax `auth.py` |
+| 1차 요청 body | `{type:"auth", username, password, remember}` | **동일 (flat)** | staciax/Bbalduzz/SkinPeek 모두 flat. techchrism 최신 doc 의 `riot_identity:{captcha,...}` 중첩 스키마는 **웹 브라우저 로그인 페이지 경로 전용**이며, 데스크톱 클라이언트 사칭 경로는 여전히 flat 구 스키마로 동작. |
+| Captcha 필요 여부 | 필수로 오인 | **불필요** (데스크톱 클라이언트 사칭 경로) | 4 개 OSS 봇 모두 captcha 필드 없이 동작 중 (2026-02 기준 staciax commit 활성) |
+| 성공 응답 | `response.parameters.uri` fragment | **동일** | staciax 는 정규식 `access_token=(...).*id_token=(...).*expires_in=(\d+)` 로 파싱. techchrism 신규 `login_token` 스키마는 쓰이지 않음. |
+| MFA 요청 body | `{type:"multifactor", code, rememberDevice}` | **동일 (flat)** | staciax/Bbalduzz. techchrism 의 `{multifactor:{otp,rememberDevice}}` 중첩은 신규 스키마. |
+| PUUID 획득 | `GET /userinfo` 별도 호출 | **access_token JWT claim `sub` 파싱 (1 HTTP 호출 절약)** | SkinPeek/ruzbyte 공통. userinfo 는 region 정보 등 추가 필드 필요할 때만. |
+
+### 신규 필수 요건: 데스크톱 클라이언트 사칭
+
+**User-Agent (고정 문자열, 환경변수 `RIOT_CLIENT_USER_AGENT`):**
+```
+RiotClient/60.0.6.4770705.4749685 rso-auth (Windows;10;;Professional, x64)
+```
+(ADR-0005 의 `RIOT_CLIENT_VERSION` 과 구분. UA 는 로그인용, clientVersion 은 storefront 헤더용.)
+
+**TLS ciphers (Node `https.Agent`):** staciax 의 `FORCED_CIPHERS` 그대로 차용. `minVersion: 'TLSv1.3'`. Cloudflare 의 JA3 fingerprinting 을 Riot 공식 데스크톱 클라이언트와 유사하게 통과시키는 것이 목적.
+
+```ts
+const FORCED_CIPHERS = [
+  'ECDHE-ECDSA-AES256-GCM-SHA384',
+  'ECDHE-ECDSA-AES128-GCM-SHA256',
+  'ECDHE-ECDSA-CHACHA20-POLY1305',
+  'ECDHE-RSA-AES128-GCM-SHA256',
+  'ECDHE-RSA-CHACHA20-POLY1305',
+  'ECDHE-RSA-AES128-SHA256',
+  'ECDHE-RSA-AES128-SHA',
+  'ECDHE-RSA-AES256-SHA',
+  'ECDHE-ECDSA-AES128-SHA256',
+  'ECDHE-ECDSA-AES128-SHA',
+  'ECDHE-ECDSA-AES256-SHA',
+  'ECDHE+AES128',
+  'ECDHE+AES256',
+  'ECDHE+3DES',
+  'RSA+AES128',
+  'RSA+AES256',
+  'RSA+3DES',
+].join(':');
+```
+
+**리스크:** Node.js 의 TLS stack 은 OpenSSL 기반이라 cipher list + TLSv1.3 강제까지는 확실히 되지만, JA3 는 cipher 외에 extensions 순서/GREASE 도 포함 — Node 에서 100% 동일 fingerprint 는 불가. 실전 검증(로그인 1회 시도) 으로 Cloudflare 통과 여부 즉시 판정. 실패 시 § 11 fallback 으로.
+
+### Fallback (α″): TLS 사칭 실패 시
+
+Vercel serverless 에서 cipher 제어만으로 Cloudflare 를 못 뚫는 경우가 확인되면, 배포 경로는 **A1″ (ssid 수동 붙여넣기)** 로 축소. 구현 영향:
+
+- plan 0019 `submitCredentials`/`submitMfa` 는 코드 유지하되 **기본 비활성**, dev env 에서만 동작.
+- plan 0022 UI 는 credential 폼 숨기고 "Riot Client 에서 ssid 추출해 붙여넣기" 안내 + ssid 입력 텍스트박스. README 에 devtools 가이드.
+- PRD § 2 에 "본인 계정 시연 전용 배포" 명시. 포트폴리오 정직성 확보.
+- 그 외 (session/reauth/storefront/wishlist) 는 ssid 가 확보된 시점부터 완전히 동일하게 동작.
+
+α′ 실패 판정 기준 = **본인 계정으로 `/api/auth/login` 3회 시도 시 모두 Cloudflare challenge 반환**. 이 경우 즉시 α″ 로 rollback (plan 0022 텍스트 변경 + 엔드포인트 enable 플래그 off).
+
+### 영향받는 plan 파일
+
+- **plan 0019**: request/response 스키마 정정 (본 § 11 에 맞춰), `RIOT_CLIENT_USER_AGENT` + `FORCED_CIPHERS` 명시, JWT 파싱으로 puuid 획득(userinfo 호출 제거).
+- **plan 0020**: 영향 없음. SessionPayload/store/reauth 동일.
+- **plan 0021**: env 에 `RIOT_CLIENT_USER_AGENT` 추가 (기존 `RIOT_CLIENT_VERSION` 과 병존). 응답 스키마 변경 없음.
+- **plan 0022**: 영향 없음 (서버 응답 계약 불변).
+- **plan 0018/0023/0024**: 영향 없음.
+
+### 검증 절차 (배포 전 필수)
+
+1. 로컬 `npm test` 에 staciax 의 실제 응답 body sample 을 fixture 로 추가하여 파싱 검증.
+2. 로컬에서 본인 계정 1회 로그인 smoke → Cloudflare 통과 확인.
+3. Vercel preview deploy 후 동일 계정 재현 → serverless 환경에서도 TLS 사칭 유효 확인.
+4. 3 중 실패 시 α″ 로 1h 내 rollback (feature flag `NEXT_PUBLIC_AUTH_MODE=manual-ssid`).
