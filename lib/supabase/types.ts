@@ -19,6 +19,21 @@ export interface UserTokensRow {
 }
 
 /**
+ * Insert payload for user_tokens table.
+ *
+ * Plan 0014: bytea 컬럼은 도메인 레이어에서 raw `Uint8Array` 로 다루고,
+ * repo 가 PostgREST 전송 직전에 `\x<hex>` literal 로 직렬화한다.
+ */
+export interface UserTokenInsert {
+  puuid: string;
+  access_token_enc: Uint8Array;
+  refresh_token_enc: Uint8Array;
+  entitlements_jwt_enc: Uint8Array;
+  expires_at: Date | string;
+  needs_reauth?: boolean;
+}
+
+/**
  * Row type for wishlist table
  */
 export interface WishlistRow {

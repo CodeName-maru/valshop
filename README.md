@@ -114,6 +114,13 @@ npm test
 
 # E2E 테스트
 npm run test:e2e
+
+# Integration 테스트 (Plan 0014, 로컬 Supabase 필요 — 옵트인)
+#   1) supabase start
+#   2) .env.local 에 NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / TOKEN_ENC_KEY 설정
+#   3) npm run test:integration
+# `SUPABASE_INTEGRATION` 환경변수가 1 이 아닐 때는 자동 skip 되므로 일반 `npm test` 영향 없음.
+npm run test:integration
 ```
 
 ## Lighthouse 로컬 측정

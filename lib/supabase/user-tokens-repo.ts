@@ -1,9 +1,41 @@
 /**
  * User Tokens Repository
  * Port interface + Supabase adapter for accessing user tokens
+ *
+ * Plan 0014: PostgREST serializes bytea columns as `\x<hex>` strings on read
+ * and accepts the same literal on write. We normalize at this adapter boundary
+ * so that domain code (worker / cron / etc.) only ever sees `Uint8Array`.
  */
 
-import type { UserTokensRow } from "./types";
+import type { UserTokensRow, UserTokenInsert } from "./types";
+import { parseBytea, encodeBytea, BytEaParseError } from "./bytea";
+
+const BYTEA_COLUMNS = [
+  "access_token_enc",
+  "refresh_token_enc",
+  "entitlements_jwt_enc",
+] as const;
+
+function normalizeRow(row: Record<string, unknown>): UserTokensRow {
+  const out: Record<string, unknown> = { ...row };
+  for (const col of BYTEA_COLUMNS) {
+    out[col] = parseBytea(row[col], col);
+  }
+  return out as UserTokensRow;
+}
+
+function serializeInsert(row: UserTokenInsert): Record<string, unknown> {
+  const expires =
+    row.expires_at instanceof Date ? row.expires_at.toISOString() : row.expires_at;
+  return {
+    puuid: row.puuid,
+    access_token_enc: encodeBytea(row.access_token_enc),
+    refresh_token_enc: encodeBytea(row.refresh_token_enc),
+    entitlements_jwt_enc: encodeBytea(row.entitlements_jwt_enc),
+    expires_at: expires,
+    needs_reauth: row.needs_reauth ?? false,
+  };
+}
 
 /**
  * Port interface for user tokens repository
@@ -23,6 +55,13 @@ export interface UserTokensRepo {
    * Mark user as needing re-authentication
    */
   markNeedsReauth(userId: string): Promise<void>;
+
+  /**
+   * Upsert a user_tokens row.
+   * bytea columns are sent as `\x<hex>` literals (PostgREST write standard).
+   * Conflict target: puuid (UNIQUE).
+   */
+  upsert(row: UserTokenInsert): Promise<{ user_id: string }>;
 }
 
 /**
@@ -44,7 +83,8 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         throw new Error(`Failed to list active users: ${error.message}`);
       }
 
-      return data || [];
+      const rows = (data || []) as Record<string, unknown>[];
+      return rows.map(normalizeRow);
     },
 
     async get(userId: string): Promise<UserTokensRow | null> {
@@ -62,7 +102,8 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         throw new Error(`Failed to get user tokens: ${error.message}`);
       }
 
-      return data;
+      if (!data) return null;
+      return normalizeRow(data as Record<string, unknown>);
     },
 
     async markNeedsReauth(userId: string): Promise<void> {
@@ -75,5 +116,21 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         throw new Error(`Failed to mark needs_reauth: ${error.message}`);
       }
     },
+
+    async upsert(row: UserTokenInsert): Promise<{ user_id: string }> {
+      const payload = serializeInsert(row);
+      const { data, error } = await supabase
+        .from("user_tokens")
+        .upsert(payload, { onConflict: "puuid" })
+        .select("user_id")
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to upsert user tokens: ${error.message}`);
+      }
+      return { user_id: (data as { user_id: string }).user_id };
+    },
   };
 }
+
+export { BytEaParseError };

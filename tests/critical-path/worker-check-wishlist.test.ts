@@ -31,6 +31,39 @@ vi.mock("@/lib/crypto/aes-gcm", () => {
   };
 });
 
+/**
+ * Plan 0014 Phase 5 fixture factory.
+ * 단위 테스트가 사용하는 mock row 의 bytea 컬럼이 항상 Uint8Array 임을 보장.
+ * 누군가 mock 을 PostgREST 의 `\x...` string 으로 바꿔 통합 동작을 잘못 흉내내는 것을 방지.
+ */
+function makeMockUserRow(overrides: Partial<UserTokensRow> = {}): UserTokensRow {
+  return {
+    user_id: "u",
+    puuid: "p",
+    access_token_enc: Buffer.from("encrypted"),
+    refresh_token_enc: Buffer.from("refresh"),
+    entitlements_jwt_enc: Buffer.from("entitlements"),
+    expires_at: new Date(Date.now() + 3600000),
+    created_at: new Date(),
+    updated_at: new Date(),
+    needs_reauth: false,
+    ...overrides,
+  };
+}
+
+describe("Plan 0014 Phase 5: mock fixture contract", () => {
+  it("Test 5-1: bytea fields on mock row are byte arrays (not string hex)", () => {
+    const row = makeMockUserRow();
+    // jsdom 환경에서 Node Buffer 는 jsdom 의 Uint8Array 와 다른 realm 에 속하므로
+    // `instanceof Uint8Array` 가 false 가 될 수 있다. 대신 Buffer.isBuffer 로 확인한다.
+    // (worker 는 Buffer.from(col).toString("base64") 만 호출하므로 byte-like 면 충분.)
+    expect(Buffer.isBuffer(row.access_token_enc) || row.access_token_enc instanceof Uint8Array).toBe(true);
+    expect(Buffer.isBuffer(row.refresh_token_enc) || row.refresh_token_enc instanceof Uint8Array).toBe(true);
+    expect(Buffer.isBuffer(row.entitlements_jwt_enc) || row.entitlements_jwt_enc instanceof Uint8Array).toBe(true);
+    expect(typeof row.access_token_enc).not.toBe("string");
+  });
+});
+
 describe("Feature: /api/cron/check-wishlist 워커", () => {
   describe("Scenario: CRON_SECRET 불일치", () => {
     it("Note: This is tested at the API route level", () => {
