@@ -89,6 +89,21 @@ export class ValorantApiCatalog implements Catalog {
 }
 
 /**
+ * Get detailed skin information
+ * TODO: Implement full skin details with price, tier, rarity, etc.
+ * Currently returns a placeholder
+ */
+export async function getSkinDetail(uuid: string): Promise<MatchedSkin | null> {
+  // Placeholder implementation
+  return {
+    uuid,
+    name: "Unknown Skin",
+    priceVp: 0,
+    iconUrl: "/placeholder.png",
+  };
+}
+
+/**
  * Create singleton catalog instance
  */
 export function createCatalog(): Catalog {
