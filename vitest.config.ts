@@ -12,7 +12,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**"],
+    include: ["./tests/**/*.test.{ts,tsx}"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**", "../.worktrees/**", "../../.worktrees/**", "../../**"],
   },
   resolve: {
     alias: {

@@ -28,10 +28,10 @@ function clearLocalTokens(): void {
   }
   keysToRemove.forEach((key) => localStorage.removeItem(key));
 
-  // document.cookie 만료 세팅 (session 쿠키 파기)
-  // 동일 name/path/domain에 Max-Age=0으로 설정하여 브라우저가 삭제하도록 함
-  document.cookie =
-    "session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax";
+  // 참고: HttpOnly 쿠키는 클라이언트에서 직접 삭제할 수 없습니다.
+  // document.cookie로는 HttpOnly 아닌 쿠키만 삭제 가능하며,
+  // HttpOnly 쿠키는 서버 측에서만 만료시킬 수 있습니다.
+  // 따라서 /api/auth/logout 서버 API에서 HttpOnly 쿠키를 제거해야 합니다.
 }
 
 export function LogoutButton() {
