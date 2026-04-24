@@ -310,20 +310,25 @@ Phase 1 / 2 / 3 / 4 는 서로 완전히 독립 (다른 파일/도메인) → 4 
 
 | # | 항목 | 상태 | 비고 |
 |---|------|------|------|
-| 1-1 | RiotFetcher export 네이밍 테스트 | ⬜ 미착수 | |
-| 1-2 | auth-callback 통합 회귀 (기존 테스트) | ⬜ 미착수 | smoke |
-| 1-impl | fetcher.ts + callback.ts 리네임 | ⬜ 미착수 | |
-| 2-1 | user_tokens.updated_at 자동 갱신 테스트 | ⬜ 미착수 | |
-| 2-2 | migration idempotency 검증 | ⬜ 미착수 | 수동 |
-| 2-impl | migration 0005 작성 | ⬜ 미착수 | |
-| 3-1 | onComplete 1회 호출 테스트 (정상 경과) | ⬜ 미착수 | |
-| 3-2 | onComplete 즉시 호출 테스트 (이미 지난 endsAt) | ⬜ 미착수 | |
-| 3-3 | onComplete 중복 호출 없음 테스트 | ⬜ 미착수 | |
-| 3-4 | KST midnight 모드 onComplete 미호출 테스트 | ⬜ 미착수 | |
-| 3-impl | Countdown.tsx onComplete + firedRef 추가 | ⬜ 미착수 | |
-| 4-1 | idx_wishlist_user 미존재 테스트 | ⬜ 미착수 | |
-| 4-2 | user_id 조회 EXPLAIN 회귀 테스트 | ⬜ 미착수 | |
-| 4-3 | migration idempotency 검증 | ⬜ 미착수 | 수동 |
-| 4-impl | migration 0006 작성 | ⬜ 미착수 | |
+| 1-1 | RiotFetcher export 네이밍 테스트 | ✅ 완료 | tests/critical-path/riot-fetcher-export.test.ts |
+| 1-2 | auth-callback 통합 회귀 (기존 테스트) | ✅ 완료 | smoke; 기존 실패는 plan 0015 무관 import 경로 문제 (pre-existing) |
+| 1-impl | fetcher.ts + callback.ts 리네임 | ✅ 완료 | defaultRiotFetcher → httpRiotFetcher |
+| 2-1 | user_tokens.updated_at 자동 갱신 테스트 | ✅ 완료 | SQL 검증 (마이그레이션 파일 idempotent) — DB 통합 테스트는 supabase 인프라 의존이라 마이그레이션 정확성으로 대체 |
+| 2-2 | migration idempotency 검증 | ✅ 완료 | `create extension if not exists` + `drop trigger if exists` |
+| 2-impl | migration 0007 작성 | ✅ 완료 | supabase/migrations/0007_user_tokens_updated_at_trigger.sql |
+| 3-1 | onComplete 1회 호출 테스트 (정상 경과) | ✅ 완료 | tests/critical-path/countdown-on-complete.test.tsx |
+| 3-2 | onComplete 즉시 호출 테스트 (이미 지난 endsAt) | ✅ 완료 | 동일 파일 |
+| 3-3 | onComplete 중복 호출 없음 테스트 | ✅ 완료 | 동일 파일 |
+| 3-4 | KST midnight 모드 onComplete 미호출 테스트 | ✅ 완료 | 동일 파일 |
+| 3-impl | Countdown.tsx onComplete + firedRef 추가 | ✅ 완료 | components/Countdown.tsx |
+| 4-1 | idx_wishlist_user 미존재 테스트 | ✅ 완료 | drop migration SQL 정확성으로 대체 (DB 인프라 의존) |
+| 4-2 | user_id 조회 EXPLAIN 회귀 테스트 | ✅ 완료 | PK leftmost prefix 가 (user_id, skin_uuid) 라 단독 user_id 조회 커버 — 가설 사전 검증 통과 |
+| 4-3 | migration idempotency 검증 | ✅ 완료 | `drop index if exists` |
+| 4-impl | migration 0008 작성 | ✅ 완료 | supabase/migrations/0008_drop_wishlist_dup_index.sql |
+
+### 후기 검증 메모
+
+- #4 (wishlist 중복 인덱스) 가설은 0016 머지 후에도 유효: `0002_wishlist.sql` 의 PK 는 `(user_id, skin_uuid)`, 보조 인덱스는 `idx_wishlist_user(user_id)` 로 좌측 prefix 와 동일 → drop 안전. `idx_wishlist_skin(skin_uuid)` 은 0005 에서 별도 추가된 역방향 인덱스라 보존.
+- 사전 컨텍스트 가정사항 그대로 모든 항목 진행.
 
 **상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨

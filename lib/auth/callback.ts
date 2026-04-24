@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { exchangeAccessTokenForEntitlements, fetchPuuid, withTimeout } from "@/lib/riot/auth";
 import { encryptSession } from "@/lib/session/crypto";
 import type { SessionPayload } from "@/lib/session/types";
-import { defaultRiotFetcher } from "@/lib/riot/fetcher";
+import { httpRiotFetcher } from "@/lib/riot/fetcher";
 
 export interface AuthCallbackInput {
   state: string;
@@ -40,8 +40,8 @@ export async function handleAuthCallback(input: AuthCallbackInput): Promise<Next
   let puuid: string;
 
   try {
-    entitlementsJwt = await withTimeout(exchangeAccessTokenForEntitlements(accessToken, defaultRiotFetcher), 3000);
-    puuid = await withTimeout(fetchPuuid(accessToken, defaultRiotFetcher), 3000);
+    entitlementsJwt = await withTimeout(exchangeAccessTokenForEntitlements(accessToken, httpRiotFetcher), 3000);
+    puuid = await withTimeout(fetchPuuid(accessToken, httpRiotFetcher), 3000);
   } catch (error) {
     if (error instanceof Error && error.message === "Timeout") {
       return NextResponse.redirect(redirectUrl("/login?error=timeout"), 302);

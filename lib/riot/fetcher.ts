@@ -38,9 +38,9 @@ export interface RiotFetcher {
 }
 
 /**
- * Default RiotFetcher implementation
+ * HTTP-based RiotFetcher implementation
  */
-export const defaultRiotFetcher: RiotFetcher = {
+export const httpRiotFetcher: RiotFetcher = {
   async get(url: string, session: SessionPayload, clientVersion: string): Promise<unknown> {
     const response = await fetch(url, {
       headers: {
