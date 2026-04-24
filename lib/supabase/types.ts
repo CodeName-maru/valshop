@@ -7,6 +7,7 @@
  * Row type for user_tokens table
  *
  * Plan 0018: FR-R1 세션 vault 컬럼 추가
+ * Plan 0020: region 컬럼 추가
  */
 export interface UserTokensRow {
   user_id: string;
@@ -19,6 +20,7 @@ export interface UserTokensRow {
   refresh_token_enc: Uint8Array;
   entitlements_jwt_enc: Uint8Array;
   expires_at: Date;
+  region: string;                  // Plan 0020: Riot 지역
   created_at: Date;
   updated_at: Date;
   needs_reauth: boolean;
