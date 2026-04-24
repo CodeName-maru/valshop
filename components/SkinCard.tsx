@@ -3,6 +3,7 @@
  * 오늘의 상점 스킨 카드
  */
 
+import type { ReactNode } from "react";
 import Image from "next/image";
 import type { Skin } from "@/lib/domain/skin";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,9 +11,11 @@ import { Card, CardContent } from "@/components/ui/card";
 interface SkinCardProps {
   skin: Skin;
   priority?: boolean;
+  /** Plan 0016: 카드 우상단 슬롯 (Wishlist 토글, 제거 버튼 등) */
+  action?: ReactNode;
 }
 
-export function SkinCard({ skin, priority = false }: SkinCardProps) {
+export function SkinCard({ skin, priority = false, action }: SkinCardProps) {
   // 가격 포맷 (천단위 콤마)
   const formattedPrice = new Intl.NumberFormat("ko-KR").format(skin.priceVp);
 
@@ -37,6 +40,11 @@ export function SkinCard({ skin, priority = false }: SkinCardProps) {
                 height={24}
                 className="rounded-full"
               />
+            </div>
+          )}
+          {action && (
+            <div className="absolute top-2 left-2" data-testid="skin-card-action">
+              {action}
             </div>
           )}
         </div>
