@@ -14,7 +14,7 @@ import { runLogout, buildLogoutHeaders } from "@/lib/auth/logout";
 
 export async function POST(req: NextRequest) {
   const cookieHeader = req.headers.get("cookie");
-  const userId = readSessionFromCookies(cookieHeader);
+  const userId = await readSessionFromCookies(cookieHeader);
 
   // 토큰 파기 실행 (vault + 기타 어댑터)
   const result = await runLogout(tokenVault, { userId });

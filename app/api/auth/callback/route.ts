@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeAccessTokenForEntitlements, fetchPuuid, withTimeout } from "@/lib/riot/auth";
-import { encryptSession } from "@/lib/crypto/aes-gcm";
+import { encryptSession } from "@/lib/session/crypto";
 import { buildSessionCookie } from "@/lib/session/cookie";
 import type { SessionPayload } from "@/lib/session/types";
 import { defaultRiotFetcher } from "@/lib/riot/fetcher";
@@ -79,14 +79,19 @@ export async function handleAuthCallback(input: AuthCallbackInput): Promise<Next
   const payload: SessionPayload = {
     puuid,
     accessToken,
-    refreshToken: "", // Riot implicit grant doesn't provide refresh token
     entitlementsJwt,
     expiresAt,
     region: "kr", // Fixed for KR region only
   };
 
-  // 4. Encrypt session payload
-  const sessionCiphertext = await encryptSession(payload);
+  // 4. Encrypt session payload — env 부재/키 로드 실패 시 세부 메시지 숨김 (환경변수 이름 누출 방지)
+  let sessionCiphertext: string;
+  try {
+    sessionCiphertext = await encryptSession(payload);
+  } catch (error) {
+    console.error("[auth/callback] Session encryption failed:", error instanceof Error ? error.name : "Unknown");
+    return NextResponse.redirect(redirectUrl("/login?error=upstream"), 302);
+  }
 
   // 5. Build response with session cookie and clear auth_state
   const response = NextResponse.redirect(redirectUrl("/dashboard"), 302);
