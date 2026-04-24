@@ -1,7 +1,11 @@
 /**
  * AES-GCM Encryption/Decryption for Session Tokens
- * NOTE: This is owned by Plan 0002. This is a temporary stub for Plan 0001 to proceed.
- * Plan 0002 will replace this with the full implementation.
+ *
+ * WARNING: Tokens are currently base64-encoded (NOT encrypted).
+ * This is a known limitation and a temporary stub for Plan 0002.
+ * Plan 0002 will replace this with proper AES-GCM-256 encryption.
+ *
+ * DO NOT use this for production security-sensitive data until Plan 0002 is implemented.
  */
 
 import type { SessionPayload } from "@/lib/session/types";
