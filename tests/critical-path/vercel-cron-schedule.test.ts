@@ -44,17 +44,18 @@ describe("Feature: vercel.json cron schedule — Hobby budget", () => {
   });
 
   describe("Scenario: 스케줄이 KST 로테이션 window 내 발동 (Test 2-2)", () => {
-    it("given UTC schedule, when KST 변환, then 00:00~00:59 범위", () => {
+    it("given UTC schedule, when KST 변환, then ADR-0009 의도대로 KST 00:05 발동", () => {
       // Given
       const config = loadVercelConfig();
       const [min, hour] = config.crons[0].schedule.split(/\s+/);
       // When
       const utcHour = Number(hour);
       const kstHour = (utcHour + 9) % 24;
-      // Then
-      expect(kstHour).toBe(0); // 로테이션 직후 hour
-      expect(Number(min)).toBeGreaterThanOrEqual(0);
-      expect(Number(min)).toBeLessThanOrEqual(30); // 로테이션 후 30분 이내 권장
+      // Then: ADR-0009 는 정확히 `5 15 * * *` (UTC 15:05 = KST 00:05) 을 채택.
+      // 값이 drift 하면 fail — hour-distribution 불확실성은 구현이 아닌 운영 이슈이므로
+      // 스펙 측면에선 정확 매칭으로 의도 보존을 강제한다.
+      expect(kstHour).toBe(0);
+      expect(Number(min)).toBe(5);
     });
   });
 

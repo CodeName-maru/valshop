@@ -16,7 +16,7 @@ PRD § 6 Cost NFR 은 $0/월을 강한 제약으로 명시하며 AC-6 으로 수
 
 **Hobby 일 1회 Cron 을 채택**한다.
 
-- `vercel.json`: `{ path: "/api/cron/check-wishlist", schedule: "5 15 * * *" }` (UTC 15:05 ≈ KST 00:05). Vercel 의 hour-distribution 특성상 실제 발동은 KST 00:00~00:59 범위.
+- `vercel.json`: `{ path: "/api/cron/check-wishlist", schedule: "5 15 * * *" }` (UTC 15:05 ≈ KST 00:05). Vercel cron 정확도에 대한 공식 SLA 는 문서화되어 있지 않으므로 **기대 발동은 KST 00:05, 최악의 경우 해당 hour 내 (KST 00:00~00:59) 또는 다음 hour 초까지 지연 가능** 으로 간주한다 (출처: Vercel Docs — Cron Jobs "usage and limits", 2026-04 확인).
 - 외부 cron 서비스 / GitHub Actions / Supabase pg_cron / 유료 전환은 도입하지 않는다.
 - AC-7 을 "24시간 이내 (통상 로테이션 직후 1시간 내)" 로 완화한다. PRD 동반 수정(본 plan § Phase 1 diff 참조).
 
@@ -38,5 +38,5 @@ PRD § 6 Cost NFR 은 $0/월을 강한 제약으로 명시하며 AC-6 으로 수
 ## Consequences
 
 - Positive: $0 유지, 배포 복구, Security/Compliance 개선 (Riot 호출 감소).
-- Negative: 로테이션 직후 몇 시간 놓치는 edge case 가능성 (Vercel hour-distribution 으로 실제 발동이 KST 00:59 경일 경우 아침 확인 시점에는 반영됨 → 실질 영향 거의 없음). 야시장 종료 임박 알림 불가 (Non-goal).
+- Negative: 공식 SLA 부재로 발동이 KST 00:59 경 또는 드물게 다음 hour 로 지연될 수 있음. 유저 "아침에 확인" 패턴 (PRD § 2) 상 실질 영향 거의 없음. 야시장 종료 임박 알림 불가 (Non-goal).
 - Neutral: `notifications_sent` idempotent 설계 덕분에 Vercel 중복 발동에도 중복 메일 0. 추후 유저 베이스 확대 시 ADR-0009 를 Pro 플랜 또는 Option B 로 재검토.
