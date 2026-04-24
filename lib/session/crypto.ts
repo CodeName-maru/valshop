@@ -169,3 +169,36 @@ function isSessionPayload(v: unknown): v is SessionPayload {
     typeof o.region === "string"
   );
 }
+
+/**
+ * Plan 0021: JWT 디코더 (서명 검증 없이 페이로드만 파싱)
+ *
+ * Riot의 idToken은 이미 보안 채널(TLS)로 수신했으므로
+ * 서명 검증 없이 페이로드만 추출해도 안전합니다.
+ *
+ * @param jwt - JWT 문자열
+ * @returns 페이로드 객체 또는 null (파싱 실패)
+ */
+export function decodeJwt(jwt: string): Record<string, unknown> | null {
+  try {
+    const parts = jwt.split(".");
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    // Base64URL 디코딩
+    const payloadPart = parts[1];
+    if (!payloadPart) {
+      return null;
+    }
+
+    const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const decoded = atob(padded);
+    const json = JSON.parse(decoded);
+
+    return json as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
