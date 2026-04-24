@@ -6,6 +6,14 @@
 import type { SessionPayload } from "@/lib/session/types";
 
 /**
+ * createRiotFetcher - RiotFetcher 인스턴스 생성 헬퍼
+ * (편의 함수: httpRiotFetcher를 반환)
+ */
+export function createRiotFetcher(): RiotFetcher {
+  return httpRiotFetcher;
+}
+
+/**
  * Riot API 에러 코드 (Plan 0006 표준)
  */
 export type RiotErrorCode =

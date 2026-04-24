@@ -259,3 +259,238 @@ export function maskPuuid(puuid: string): string {
   }
   return `***${puuid.slice(-4)}`;
 }
+
+/**
+ * AuthErrorCode - Riot 인증 에러 코드 (spec § 5 단일 소스)
+ *
+ * 7종 에러 코드:
+ * - invalid_credentials: 잘못된 자격증명
+ * - mfa_required: MFA 필요
+ * - mfa_invalid: 잘못된 MFA 코드
+ * - mfa_expired: MFA 만료 (pending-jar 소관, plan 0020)
+ * - rate_limited: Rate limit 초과
+ * - riot_unavailable: Riot 서버 장애
+ * - session_expired: 세션 만료 (ssid 재인증 실패)
+ * - unknown: 알 수 없는 에러
+ */
+export type AuthErrorCode =
+  | "invalid_credentials"
+  | "mfa_required"
+  | "mfa_invalid"
+  | "mfa_expired"
+  | "rate_limited"
+  | "riot_unavailable"
+  | "session_expired"
+  | "unknown";
+
+/**
+ * NormalizedRiotError - 정규화된 Riot 에러
+ */
+export interface NormalizedRiotError {
+  code: AuthErrorCode;
+  logPayload: Record<string, unknown>;
+}
+
+/**
+ * normalizeRiotError - Riot 응답을 AuthErrorCode 로 정규화
+ *
+ * spec § 5 에 따른 table-driven 매핑.
+ * 민ensitive 필드는 로그 페이로드에서 redact 됩니다.
+ *
+ * @param raw - Riot 응답 데이터
+ * @returns 정규화된 에러 코드와 로그 페이로드
+ */
+export function normalizeRiotError(raw: {
+  body?: unknown;
+  status: number;
+  phase?: "credential" | "mfa" | "reauth";
+  response?: Response;
+}): NormalizedRiotError {
+  const { body, status, phase, response } = raw;
+  const logPayload: Record<string, unknown> = {
+    upstreamStatus: status,
+    phase: phase || "unknown",
+  };
+
+  // 1. Response 헤더 redaction (먼저 처리하여 logPayload에 포함)
+  if (response) {
+    const headers: Record<string, unknown> = {};
+    for (const [key, value] of response.headers.entries()) {
+      const lowerKey = key.toLowerCase();
+      if (REDACT_KEYS.some((rk) => lowerKey === rk || lowerKey === "set-cookie")) {
+        headers[key] = "[REDACTED]";
+      } else {
+        headers[key] = value;
+      }
+    }
+    logPayload.headers = headers;
+  }
+
+  // 2. Status 기본 분류
+  if (status === 0) {
+    // timeout/AbortError
+    return {
+      code: "unknown",
+      logPayload: redactLogPayload({ ...logPayload, reason: "timeout_or_abort" }),
+    };
+  }
+
+  // 3. Cloudflare 1020 체크 (body가 문자열이고 cloudflare 포함)
+  if (
+    typeof body === "string" &&
+    body.toLowerCase().includes("cloudflare") &&
+    (status === 403 || status === 503)
+  ) {
+    return {
+      code: "rate_limited",
+      logPayload: redactLogPayload({ ...logPayload, detected: "cloudflare_1020" }),
+    };
+  }
+
+  // 4. HTTP 상태 코드 기반 분류
+  if (status === 429) {
+    return {
+      code: "rate_limited",
+      logPayload: redactLogPayload(logPayload),
+    };
+  }
+
+  if (status >= 500 && status < 600) {
+    return {
+      code: "riot_unavailable",
+      logPayload: redactLogPayload(logPayload),
+    };
+  }
+
+  // 5. 401 + auth_failure 조합은 session_expired (reauth 맥락)
+  if (status === 401) {
+    if (typeof body === "object" && body !== null) {
+      const b = body as Record<string, unknown>;
+      if (b.error === "auth_failure") {
+        return {
+          code: "session_expired",
+          logPayload: redactLogPayload(logPayload),
+        };
+      }
+    }
+    // 일반 401
+    return {
+      code: "session_expired",
+      logPayload: redactLogPayload(logPayload),
+    };
+  }
+
+  // 6. Body 기반 분류 (Riot 응답 스키마)
+  if (typeof body === "object" && body !== null) {
+    const b = body as Record<string, unknown>;
+
+    // MFA 필요
+    if (b.type === "multifactor") {
+      const multifactor = b.multifactor as Record<string, unknown> | undefined;
+      return {
+        code: "mfa_required",
+        logPayload: redactLogPayload({ ...logPayload, multifactorEmail: multifactor?.email }),
+      };
+    }
+
+    // MFA 시도 실패
+    if (
+      b.type === "multifactor_attempt_failed" ||
+      b.error === "multifactor_attempt_failed"
+    ) {
+      return {
+        code: "mfa_invalid",
+        logPayload: redactLogPayload(logPayload),
+      };
+    }
+
+    // 인증 실패 - phase에 따라 분기
+    if (b.error === "auth_failure") {
+      if (phase === "reauth") {
+        return {
+          code: "session_expired",
+          logPayload: redactLogPayload(logPayload),
+        };
+      }
+      return {
+        code: "invalid_credentials",
+        logPayload: redactLogPayload(logPayload),
+      };
+    }
+
+    // Rate limit (body에 포함된 경우)
+    if (b.error === "rate_limited") {
+      return {
+        code: "rate_limited",
+        logPayload: redactLogPayload(logPayload),
+      };
+    }
+
+    // Body를 logPayload에 추가 (redact 포함)
+    logPayload.body = redactDeep(body);
+  } else if (typeof body === "string") {
+    logPayload.body = body;
+  }
+
+  // 7. 분류 실패 시 unknown
+  return {
+    code: "unknown",
+    logPayload: redactLogPayload(logPayload),
+  };
+}
+
+/**
+ * Redact keys - 민정 정보 키 목록
+ */
+const REDACT_KEYS = [
+  "access_token",
+  "id_token",
+  "ssid",
+  "password",
+  "authentication_code",
+  "refresh_token",
+  "entitlements_token",
+  "set-cookie",
+  "cookie",
+  "authorization",
+];
+
+/**
+ * redactDeep - 객체를 재귀적으로 redact
+ */
+function redactDeep(value: unknown): unknown {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    // 문자열 값 자체는 redact하지 않음 (키-based redact만)
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => redactDeep(item));
+  }
+
+  if (typeof value === "object") {
+    const obj: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      const lowerKey = key.toLowerCase();
+      if (REDACT_KEYS.some((rk) => lowerKey === rk)) {
+        obj[key] = "[REDACTED]";
+      } else {
+        obj[key] = redactDeep(val);
+      }
+    }
+    return obj;
+  }
+
+  return value;
+}
+
+/**
+ * redactLogPayload - 로그 페이로드를 redact
+ */
+function redactLogPayload(payload: Record<string, unknown>): Record<string, unknown> {
+  return redactDeep(payload) as Record<string, unknown>;
+}

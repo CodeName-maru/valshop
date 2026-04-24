@@ -14,7 +14,7 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     testTimeout: 15000, // 15초 타임아웃 (429 retry 테스트 대응)
     include: ["./tests/**/*.test.{ts,tsx}"],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**", "../.worktrees/**", "../../.worktrees/**", "../../**"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**"],
   },
   resolve: {
     alias: {
