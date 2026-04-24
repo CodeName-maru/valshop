@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
 
   // Build Riot authorize URL
   const riotUrl = buildRiotAuthorizeUrl(state, redirectUri);
+  console.log("[auth/start] Redirecting to:", riotUrl);
 
   // Set state cookie (httpOnly, Secure, SameSite=Lax, 10 min TTL)
   const response = NextResponse.redirect(riotUrl, 302);

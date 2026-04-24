@@ -59,7 +59,7 @@ export function buildRiotAuthorizeUrl(state: string, redirectUri: string): strin
   const params = new URLSearchParams({
     client_id: "play-valorant-web-prod",
     response_type: "token",
-    scope: "account openid",
+    scope: "account",
     state,
     redirect_uri: redirectUri,
   });

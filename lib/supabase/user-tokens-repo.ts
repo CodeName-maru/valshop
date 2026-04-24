@@ -21,7 +21,7 @@ function normalizeRow(row: Record<string, unknown>): UserTokensRow {
   for (const col of BYTEA_COLUMNS) {
     out[col] = parseBytea(row[col], col);
   }
-  return out as UserTokensRow;
+  return out as unknown as UserTokensRow;
 }
 
 function serializeInsert(row: UserTokenInsert): Record<string, unknown> {

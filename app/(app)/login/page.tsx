@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { Suspense, useEffect, useState, type MouseEvent, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 
 // Plan 0006 Phase 5-3 화이트리스트와 동일 키. 신규 코드 추가 시 양쪽 grep 동기화 필요.
@@ -15,10 +15,22 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const searchParams = useSearchParams();
   const errorCode = searchParams?.get("error") ?? null;
 
   const [loading, setLoading] = useState(false);
+  const [showDevToken, setShowDevToken] = useState(false);
+  const [tokenInput, setTokenInput] = useState("");
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [tokenSending, setTokenSending] = useState(false);
 
   // bfcache 복귀 시 disabled 잔존 방지
   useEffect(() => {
@@ -45,6 +57,34 @@ export default function LoginPage() {
     }
     setLoading(true);
     // default navigation 진행 — preventDefault 호출하지 않음
+  };
+
+  const handleTokenSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!tokenInput.trim() || tokenSending) return;
+
+    setTokenSending(true);
+    setTokenError(null);
+
+    try {
+      const res = await fetch("/api/auth/manual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken: tokenInput.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.redirect) {
+        window.location.href = data.redirect;
+      } else {
+        setTokenError(data.error || "토큰 인증에 실패했습니다.");
+        setTokenSending(false);
+      }
+    } catch {
+      setTokenError("네트워크 오류가 발생했습니다.");
+      setTokenSending(false);
+    }
   };
 
   return (
@@ -84,6 +124,48 @@ export default function LoginPage() {
             >
               {loading ? "이동 중…" : "Riot 로 로그인"}
             </a>
+
+            {/* 개발용 수동 토큰 입력 */}
+            <div className="mt-4 border-t border-border pt-4">
+              <button
+                type="button"
+                onClick={() => setShowDevToken(!showDevToken)}
+                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showDevToken ? "▼" : "▶"} 개발용 수동 토큰 입력
+              </button>
+
+              {showDevToken ? (
+                <form onSubmit={handleTokenSubmit} className="mt-3 space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Riot 토큰을 직접 입력하여 로그인합니다.
+                  </p>
+                  <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1">
+                    <li>F12 → Application → Local Storage</li>
+                    <li>https://auth.riotgames.com → &quot;token&quot; 값 복사</li>
+                    <li>아래에 붙여넣기</li>
+                  </ol>
+                  <input
+                    type="text"
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                    placeholder="Riot access_token 붙여넣기..."
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    disabled={tokenSending}
+                  />
+                  {tokenError && (
+                    <p className="text-xs text-destructive">{tokenError}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={tokenSending || !tokenInput.trim()}
+                    className="w-full rounded-md bg-secondary px-3 py-2 text-sm font-medium hover:bg-secondary/80 disabled:opacity-50"
+                  >
+                    {tokenSending ? "인증 중..." : "토큰으로 로그인"}
+                  </button>
+                </form>
+              ) : null}
+            </div>
 
             <div className="mt-4 text-center text-xs text-muted-foreground">
               VAL-Shop은 라이엇 게임즈와 무관한 팬메이드 프로젝트입니다.

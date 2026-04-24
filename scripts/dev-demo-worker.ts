@@ -30,7 +30,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 for (const line of readFileSync(resolve(process.cwd(), ".env.local"), "utf8").split("\n")) {
   const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
-  if (m) process.env[m[1]] = m[2];
+  if (m && m[1]) process.env[m[1]] = m[2] ?? "";
 }
 
 const SEEDED_SKIN = "11111111-1111-1111-1111-111111111111";

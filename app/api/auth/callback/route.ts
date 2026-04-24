@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
   const state = url.searchParams.get("state");
   const accessToken = url.searchParams.get("access_token");
 
+  console.log("[auth/callback] state:", state ? "present" : "missing", "accessToken:", accessToken ? "present" : "missing");
+
   let cookieState = request.cookies.get("auth_state")?.value ?? null;
   if (!cookieState) {
     const cookieHeader = request.headers.get("cookie");
