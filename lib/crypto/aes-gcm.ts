@@ -73,7 +73,9 @@ export async function decrypt(
     const decoder = new TextDecoder();
     return decoder.decode(plaintext);
   } catch (error) {
-    throw new Error("Decryption failed");
+    // 원본 에러(OperationError/TypeError/…) 를 cause 로 보존 — 진단 시 스택/이름 확인 가능.
+    // 외부로 드러나는 메시지는 정보 누출 방지 위해 일반화된 문자열 유지.
+    throw new Error("Decryption failed", { cause: error });
   }
 }
 
@@ -136,11 +138,27 @@ export async function decryptTokens(
   refreshToken: string;
   entitlementsJwt: string;
 }> {
-  const [accessToken, refreshToken, entitlementsJwt] = await Promise.all([
+  // allSettled 로 모든 결과를 받아 실패한 토큰 라벨을 에러에 포함시킨다.
+  // Promise.all 은 첫 실패만 전파하므로 어느 토큰이 깨졌는지 디버깅 불가.
+  const results = await Promise.allSettled([
     decrypt(accessTokenEnc, key),
     decrypt(refreshTokenEnc, key),
     decrypt(entitlementsJwtEnc, key),
   ]);
 
-  return { accessToken, refreshToken, entitlementsJwt };
+  const labels = ["accessToken", "refreshToken", "entitlementsJwt"] as const;
+  const failed = results
+    .map((r, i) => (r.status === "rejected" ? labels[i] : null))
+    .filter((x): x is typeof labels[number] => x !== null);
+
+  if (failed.length > 0) {
+    const first = results.find((r) => r.status === "rejected") as PromiseRejectedResult;
+    throw new Error(`Decryption failed for: ${failed.join(", ")}`, { cause: first.reason });
+  }
+
+  const [accessToken, refreshToken, entitlementsJwt] = results.map(
+    (r) => (r as PromiseFulfilledResult<string>).value
+  );
+
+  return { accessToken: accessToken!, refreshToken: refreshToken!, entitlementsJwt: entitlementsJwt! };
 }
