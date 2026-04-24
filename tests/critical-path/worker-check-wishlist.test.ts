@@ -1,6 +1,13 @@
 /**
  * Test 3-1 ~ 3-7: Worker Integration Tests
  * Phase 3: Worker endpoint (integration)
+ *
+ * Plan 0013 cross-reference (ADR-0009):
+ *   Vercel Hobby 는 cron 을 해당 hour 내 임의 시점에 발동시키므로 동일 rotation 에
+ *   대한 중복 발동이 가능하다. ADR-0009 Consequences 는 "notifications_sent
+ *   idempotency 덕분에 중복 메일 0" 을 전제한다. 이 전제는 아래 "같은 로테이션
+ *   중복 발송 방지" 시나리오가 담보한다. 본 회귀 테스트가 깨지면 plan 0013 /
+ *   ADR-0009 의 안전성 가정이 무너지므로 우선 수정 필요.
  */
 
 import { describe, it, expect, vi } from "vitest";
