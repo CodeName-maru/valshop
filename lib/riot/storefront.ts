@@ -66,8 +66,8 @@ export function parseStorefront(
   }
 
   // 로테이션 종료 시간 계산
-  const remainingSeconds =
-    skinsPanel.SingleItemOffersRemainingDurationInSeconds;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- untrusted Riot upstream JSON; field may be missing
+  const remainingSeconds = skinsPanel.SingleItemOffersRemainingDurationInSeconds ?? 0;
   const rotationEndsAt = new Date(now.getTime() + remainingSeconds * 1000);
 
   // 오퍼 파싱
