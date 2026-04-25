@@ -20,8 +20,8 @@ export default function SearchPage() {
   const deferred = useDeferredValue(query);
 
   useEffect(() => {
-    let alive = true as boolean;
-    (async () => {
+    let alive = true;
+    void (async () => {
       try {
         const [cRes, wRes] = await Promise.all([
           fetch("/api/catalog"),

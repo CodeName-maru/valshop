@@ -5,7 +5,7 @@
  */
 
 import type { SkinMeta, TierMeta } from "./match";
-import type { Skin, SkinDetail, Chroma, SkinLevel } from "@/lib/domain/skin";
+import type { SkinDetail } from "@/lib/domain/skin";
 import type { MatchedSkin } from "@/lib/domain/wishlist";
 
 /**
@@ -18,7 +18,7 @@ export async function getSkinCatalog(): Promise<Map<string, SkinMeta>> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch skin catalog: ${response.status}`);
+    throw new Error(`Failed to fetch skin catalog: ${String(response.status)}`);
   }
 
   const json = await response.json();
@@ -51,7 +51,7 @@ export async function getTierCatalog(): Promise<Map<string, TierMeta>> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch tier catalog: ${response.status}`);
+    throw new Error(`Failed to fetch tier catalog: ${String(response.status)}`);
   }
 
   const json = await response.json();

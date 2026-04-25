@@ -77,7 +77,7 @@ export function WishlistToggle({
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={() => void toggle()}
       aria-pressed={inWishlist}
       aria-label={inWishlist ? "위시리스트에서 제거" : "위시리스트에 추가"}
       data-testid={`wishlist-toggle-${skinUuid}`}

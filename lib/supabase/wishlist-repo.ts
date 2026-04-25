@@ -27,7 +27,7 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId);
       if (cErr) {
-        throw new Error(`Failed to count wishlist: ${cErr.message}`);
+        throw new Error(`Failed to count wishlist: ${String(cErr.message)}`);
       }
       // already exists 체크 — 멱등성
       const { data: existing, error: exErr } = await supabase
@@ -37,7 +37,7 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
         .eq("skin_uuid", skinUuid)
         .limit(1);
       if (exErr) {
-        throw new Error(`Failed to check wishlist: ${exErr.message}`);
+        throw new Error(`Failed to check wishlist: ${String(exErr.message)}`);
       }
       if (existing && existing.length > 0) {
         return; // 이미 있으면 멱등 no-op
@@ -50,8 +50,8 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
         .insert({ user_id: userId, skin_uuid: skinUuid });
       if (error) {
         // 동시성 race 로 PK 중복이 발생해도 멱등 처리
-        if ((error).code === "23505") return;
-        throw new Error(`Failed to add wishlist: ${error.message}`);
+        if (error.code === "23505") return;
+        throw new Error(`Failed to add wishlist: ${String(error.message)}`);
       }
     },
 
@@ -62,7 +62,7 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
         .eq("user_id", userId)
         .eq("skin_uuid", skinUuid);
       if (error) {
-        throw new Error(`Failed to remove wishlist: ${error.message}`);
+        throw new Error(`Failed to remove wishlist: ${String(error.message)}`);
       }
     },
 
@@ -73,7 +73,7 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
         .eq("user_id", userId);
 
       if (error) {
-        throw new Error(`Failed to list wishlist: ${error.message}`);
+        throw new Error(`Failed to list wishlist: ${String(error.message)}`);
       }
 
       return (data || []).map((row: any) => row.skin_uuid);
@@ -85,7 +85,7 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId);
       if (error) {
-        throw new Error(`Failed to count wishlist: ${error.message}`);
+        throw new Error(`Failed to count wishlist: ${String(error.message)}`);
       }
       return count ?? 0;
     },

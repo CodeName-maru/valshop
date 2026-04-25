@@ -66,10 +66,10 @@ function redact(value: unknown, seen = new WeakSet()): unknown {
 
   // Handle plain objects
   if (value.constructor === Object) {
-    if (seen.has(value)) {
+    if (seen.has(value as object)) {
       return "[CIRCULAR]";
     }
-    seen.add(value);
+    seen.add(value as object);
 
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
@@ -82,9 +82,12 @@ function redact(value: unknown, seen = new WeakSet()): unknown {
     return result;
   }
 
-  // For other object types, try toString or return a marker
+  // For other object types (Error, class instances), use JSON serialization
+  // with a replacer that recursively redacts sensitive keys to avoid
+  // leaking secrets stored as own properties (e.g. error.upstreamRaw.access_token,
+  // class instance fields).
   try {
-    return String(value);
+    return JSON.stringify(value, (key, val) => (isSensitiveKey(key) ? "[REDACTED]" : val));
   } catch {
     return "[UNSTRINGIFIABLE]";
   }
@@ -95,7 +98,7 @@ function redact(value: unknown, seen = new WeakSet()): unknown {
  */
 function getMinLevel(): LogLevel {
   const envLevel = process.env.LOG_LEVEL?.toLowerCase() as LogLevel | undefined;
-  if (envLevel !== undefined && envLevel in LEVEL_ORDER) {
+  if (envLevel && LEVEL_ORDER[envLevel] !== undefined) {
     return envLevel;
   }
 
@@ -127,7 +130,6 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
   const redactedCtx = redact(ctx) as Record<string, unknown>;
 
   try {
-     
     console.log(
       JSON.stringify({
         level,
@@ -138,7 +140,6 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
     );
   } catch {
     // Fallback if JSON.stringify fails
-     
     console.log(
       JSON.stringify({
         level,
@@ -154,10 +155,10 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
  * Logger interface with 4 levels
  */
 export const logger = {
-  debug: (msg: string, ctx?: Record<string, unknown>) => { write("debug", msg, ctx); },
-  info: (msg: string, ctx?: Record<string, unknown>) => { write("info", msg, ctx); },
-  warn: (msg: string, ctx?: Record<string, unknown>) => { write("warn", msg, ctx); },
-  error: (msg: string, ctx?: Record<string, unknown>) => { write("error", msg, ctx); },
+  debug: (msg: string, ctx?: Record<string, unknown>) => write("debug", msg, ctx),
+  info: (msg: string, ctx?: Record<string, unknown>) => write("info", msg, ctx),
+  warn: (msg: string, ctx?: Record<string, unknown>) => write("warn", msg, ctx),
+  error: (msg: string, ctx?: Record<string, unknown>) => write("error", msg, ctx),
 };
 
 /**

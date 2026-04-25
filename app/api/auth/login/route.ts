@@ -27,9 +27,9 @@ import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => { realLogger.info(`[auth.login] ${msg}`, meta); },
-  warn: (msg: string, meta?: Record<string, unknown>) => { realLogger.warn(`[auth.login] ${msg}`, meta); },
-  error: (msg: string, meta?: Record<string, unknown>) => { realLogger.error(`[auth.login] ${msg}`, meta); },
+  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[auth.login] ${msg}`, meta),
+  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.login] ${msg}`, meta),
+  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.login] ${msg}`, meta),
 };
 
 /**
@@ -50,22 +50,22 @@ function extractPuuidFromIdToken(idToken: string): string | null {
 /**
  * GET 요청은 405 Method Not Allowed
  */
-export async function GET() {
-  return NextResponse.json({ code: "unknown" }, { status: 405 });
+export function GET() {
+  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
 /**
  * PUT 요청은 405 Method Not Allowed
  */
-export async function PUT() {
-  return NextResponse.json({ code: "unknown" }, { status: 405 });
+export function PUT() {
+  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
 /**
  * DELETE 요청은 405 Method Not Allowed
  */
-export async function DELETE() {
-  return NextResponse.json({ code: "unknown" }, { status: 405 });
+export function DELETE() {
+  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
 /**
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode === "manual-ssid") {
     return NextResponse.json(
-      { code: "unknown" },
+      { code: "unknown" as AuthErrorCode },
       { status: 410 }
     );
   }
@@ -119,13 +119,13 @@ export async function POST(req: NextRequest) {
 
     if (typeof username !== "string" || typeof password !== "string") {
       return NextResponse.json(
-        { code: "invalid_credentials" },
+        { code: "invalid_credentials" as AuthErrorCode },
         { status: 401 }
       );
     }
   } catch {
     return NextResponse.json(
-      { code: "invalid_credentials" },
+      { code: "invalid_credentials" as AuthErrorCode },
       { status: 401 }
     );
   }
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
         if (!puuid) {
           logger.error("auth.login.puuid_extract_failed");
           return NextResponse.json(
-            { code: "riot_unavailable" },
+            { code: "riot_unavailable" as AuthErrorCode },
             { status: 502 }
           );
         }
@@ -260,7 +260,7 @@ export async function POST(req: NextRequest) {
       case "invalid": {
         logger.warn("auth.login.invalid_credentials");
         return NextResponse.json(
-          { code: "invalid_credentials" },
+          { code: "invalid_credentials" as AuthErrorCode },
           { status: 401 }
         );
       }
@@ -268,7 +268,7 @@ export async function POST(req: NextRequest) {
       case "rate_limited": {
         logger.warn("auth.login.rate_limited");
         return NextResponse.json(
-          { code: "rate_limited" },
+          { code: "rate_limited" as AuthErrorCode },
           { status: 429 }
         );
       }
@@ -276,7 +276,7 @@ export async function POST(req: NextRequest) {
       case "upstream": {
         logger.error("auth.login.upstream_error");
         return NextResponse.json(
-          { code: "riot_unavailable" },
+          { code: "riot_unavailable" as AuthErrorCode },
           { status: 502 }
         );
       }
@@ -284,7 +284,7 @@ export async function POST(req: NextRequest) {
       default: {
         logger.error("auth.login.unknown_kind", { kind: (credResult as any).kind });
         return NextResponse.json(
-          { code: "unknown" },
+          { code: "unknown" as AuthErrorCode },
           { status: 500 }
         );
       }
@@ -296,7 +296,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { code: "unknown" },
+      { code: "unknown" as AuthErrorCode },
       { status: 500 }
     );
   }

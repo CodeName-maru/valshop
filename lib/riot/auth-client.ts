@@ -84,20 +84,6 @@ function withAbortSignal(ms: number = 3000): { signal: AbortSignal; cleanup: () 
 }
 
 /**
- * buildAuthorizeUrl - authorize URL 구성 (내부용)
- */
-function buildAuthorizeUrl(): string {
-  const params = new URLSearchParams({
-    client_id: AUTHORIZE_PARAMS.client_id,
-    nonce: AUTHORIZE_PARAMS.nonce,
-    redirect_uri: AUTHORIZE_PARAMS.redirect_uri,
-    response_type: AUTHORIZE_PARAMS.response_type,
-    scope: AUTHORIZE_PARAMS.scope,
-  });
-  return `${RIOT_AUTH_BASE}/authorize?${params.toString()}`;
-}
-
-/**
  * buildReauthUrl - reauth용 authorize URL (prompt=none 추가)
  */
 function buildReauthUrl(): string {
@@ -458,7 +444,7 @@ export async function exchangeEntitlements(
     });
 
     if (!response.ok) {
-      throw new Error(`Entitlements request failed: ${response.status}`);
+      throw new Error(`Entitlements request failed: ${String(response.status)}`);
     }
 
     const data = await response.json();

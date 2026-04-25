@@ -23,6 +23,15 @@ export interface RiotFetcher {
 
 const MAX_429_RETRIES = 1;
 
+/**
+ * RiotError union -> Error wrapping (only-throw-error 만족).
+ * union 필드는 보존되어 catch 측 동작 동일.
+ */
+function toThrowable(err: RiotError): Error & RiotError {
+  const wrapped = new Error(err.code) as Error & RiotError;
+  return Object.assign(wrapped, err);
+}
+
 interface Deps {
   sleep?: (ms: number) => Promise<void>;
 }
@@ -62,11 +71,11 @@ export function createRiotFetcher(deps: Deps = {}): RiotFetcher {
         }
 
         // 그 외 에러는 즉시 throw
-        throw error;
+        throw toThrowable(error);
       }
 
       // 여기 도달하면 429 재시도 실패
-      throw lastError;
+      throw toThrowable(lastError as RiotError);
     },
   };
 }

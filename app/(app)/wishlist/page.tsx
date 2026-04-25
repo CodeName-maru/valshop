@@ -15,8 +15,8 @@ export default function WishlistPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let alive = true as boolean;
-    (async () => {
+    let alive = true;
+    void (async () => {
       try {
         const wRes = await fetch("/api/wishlist");
         if (wRes.status === 401) {
@@ -51,13 +51,19 @@ export default function WishlistPage() {
   async function remove(uuid: string) {
     const prev = items;
     setItems((p) => p.filter((s) => s.uuid !== uuid));
-    const res = await fetch(`/api/wishlist/${encodeURIComponent(uuid)}`, {
-      method: "DELETE",
-    });
-    if (!res.ok) {
-      // rollback
+    try {
+      const res = await fetch(`/api/wishlist/${encodeURIComponent(uuid)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        // rollback
+        setItems(prev);
+        setError("삭제에 실패했습니다");
+      }
+    } catch {
+      // rollback on network error
       setItems(prev);
-      setError("삭제에 실패했습니다");
+      setError("네트워크 오류가 발생했습니다");
     }
   }
 
@@ -85,7 +91,7 @@ export default function WishlistPage() {
             action={
               <button
                 type="button"
-                onClick={() => remove(skin.uuid)}
+                onClick={() => void remove(skin.uuid)}
                 aria-label="위시리스트에서 제거"
                 data-testid={`wishlist-remove-${skin.uuid}`}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600"

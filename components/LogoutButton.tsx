@@ -69,7 +69,7 @@ export function LogoutButton() {
   return (
     <Button
       variant="ghost"
-      onClick={handleLogout}
+      onClick={() => void handleLogout()}
       disabled={isPending}
       aria-label="로그아웃"
     >

@@ -223,6 +223,47 @@ describe("lib/logger", () => {
     });
   });
 
+  describe("JSON.stringify fallback redaction (M1)", () => {
+    it("should redact sensitive fields on class instances (non-plain objects)", () => {
+      class Foo {
+        access_token = "SECRET_ABC";
+        public_field = "ok";
+      }
+      logger.info("x", { foo: new Foo() });
+
+      const raw = stdoutCapture[stdoutCapture.length - 1] ?? "";
+      expect(raw).not.toContain("SECRET_ABC");
+      expect(raw).toContain("[REDACTED]");
+    });
+
+    it("should redact sensitive fields nested on Error instances", () => {
+      const err = new Error("upstream failed") as Error & {
+        upstreamRaw?: { access_token: string };
+      };
+      err.upstreamRaw = { access_token: "X_LEAKY_TOKEN" };
+      logger.error("upstream", { err });
+
+      const raw = stdoutCapture[stdoutCapture.length - 1] ?? "";
+      expect(raw).not.toContain("X_LEAKY_TOKEN");
+    });
+
+    it("should redact ssid / entitlements / authorization / password on class instances", () => {
+      class Bag {
+        ssid = "SSID_LEAK";
+        entitlements = "ENT_LEAK";
+        authorization = "Bearer AUTH_LEAK";
+        password = "PW_LEAK";
+      }
+      logger.info("bag", { bag: new Bag() });
+
+      const raw = stdoutCapture[stdoutCapture.length - 1] ?? "";
+      expect(raw).not.toContain("SSID_LEAK");
+      expect(raw).not.toContain("ENT_LEAK");
+      expect(raw).not.toContain("AUTH_LEAK");
+      expect(raw).not.toContain("PW_LEAK");
+    });
+  });
+
   describe("Error handling", () => {
     it("should handle JSON.stringify failure gracefully", () => {
       // Create a circular reference that JSON.stringify can't handle

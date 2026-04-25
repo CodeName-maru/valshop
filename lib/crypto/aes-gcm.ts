@@ -89,7 +89,7 @@ export async function loadKey(keyBase64: string): Promise<CryptoKey> {
   const keyData = Buffer.from(keyBase64, "base64");
 
   if (keyData.length !== 32) {
-    throw new Error(`Invalid key length: expected 32 bytes, got ${keyData.length}`);
+    throw new Error(`Invalid key length: expected 32 bytes, got ${String(keyData.length)}`);
   }
 
   return await crypto.subtle.importKey(
