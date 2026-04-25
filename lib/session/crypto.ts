@@ -36,7 +36,7 @@ export const SESSION_TTL_SEC = 1209600; // 14 * 24 * 60 * 60
  * 최초 호출 시 importKey 를 수행하고 그 Promise 를 캐시한다.
  * 실패(env 부재/길이 오류) 시 캐시에 저장하지 않고 throw.
  */
-export function getTokenKey(): Promise<CryptoKey> {
+export async function getTokenKey(): Promise<CryptoKey> {
   if (cachedTokenKey) return cachedTokenKey;
   const keyBase64 = process.env.TOKEN_ENC_KEY;
   if (!keyBase64) {
