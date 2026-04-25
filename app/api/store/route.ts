@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { getTodayStore } from "@/lib/riot/storefront";
 import { getSession } from "@/lib/session/guard";
-import { RiotFetcher, RiotApiError, type RiotErrorCode } from "@/lib/riot/fetcher";
+import { RiotFetcher, RiotApiError } from "@/lib/riot/fetcher";
 
 /**
  * 기본 RiotFetcher 구현체
@@ -29,7 +29,7 @@ class DefaultRiotFetcher implements RiotFetcher {
 
     if (!response.ok) {
       if (response.status === 401) {
-        throw new RiotApiError("TOKEN_EXPIRED", "Token expired");
+        throw new RiotApiError("TOKEN_EXPIRED", "토큰이 만료되었습니다. 다시 로그인해 주세요.");
       }
       if (response.status === 429) {
         throw new RiotApiError("RIOT_RATE_LIMITED", "Rate limited");
@@ -73,17 +73,28 @@ export async function GET() {
     return NextResponse.json(store);
   } catch (error) {
     if (error instanceof RiotApiError) {
-      const statusMap: Record<RiotErrorCode, number> = {
-        TOKEN_EXPIRED: 401,
-        RIOT_RATE_LIMITED: 502,
-        RIOT_5XX: 502,
-        INTERNAL_ERROR: 500,
-        UNAUTHENTICATED: 401,
+      // Plan 0006 spec: 외부 응답 code 표준 (TOKEN_EXPIRED / RATE_LIMITED / SERVER_ERROR)
+      // 내부 RiotErrorCode → 외부 응답 code 매핑
+      const codeMap = {
+        TOKEN_EXPIRED: { code: "TOKEN_EXPIRED", status: 401 },
+        RIOT_RATE_LIMITED: { code: "RATE_LIMITED", status: 429 },
+        RIOT_5XX: { code: "SERVER_ERROR", status: 502 },
+        INTERNAL_ERROR: { code: "INTERNAL_ERROR", status: 500 },
+        UNAUTHENTICATED: { code: "UNAUTHENTICATED", status: 401 },
+      } as const;
+
+      const mapped = codeMap[error.code];
+      const messageMap: Record<string, string> = {
+        TOKEN_EXPIRED: "토큰이 만료되었습니다. 다시 로그인해 주세요.",
+        RATE_LIMITED: "요청이 많아 잠시 후 다시 시도해 주세요.",
+        SERVER_ERROR: "Riot 서버에 일시적인 문제가 발생했습니다.",
+        INTERNAL_ERROR: "내부 서버 오류가 발생했습니다.",
+        UNAUTHENTICATED: "인증이 필요합니다.",
       };
 
       return NextResponse.json(
-        { code: error.code, message: error.message },
-        { status: statusMap[error.code] || 500 }
+        { code: mapped.code, message: messageMap[mapped.code] ?? "오류가 발생했습니다." },
+        { status: mapped.status }
       );
     }
 
