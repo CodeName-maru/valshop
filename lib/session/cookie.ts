@@ -16,5 +16,5 @@ import { encryptSession } from "./crypto";
 export async function buildSessionCookie(payload: SessionPayload): Promise<string> {
   const maxAge = Math.max(0, payload.expiresAt - Math.floor(Date.now() / 1000));
   const value = await encryptSession(payload);
-  return `session=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
+  return `session=${value}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${String(maxAge)}`;
 }

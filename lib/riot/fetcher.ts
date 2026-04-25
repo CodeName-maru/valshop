@@ -68,7 +68,7 @@ export const httpRiotFetcher: RiotFetcher = {
       if (response.status >= 500) {
         throw new RiotApiError("RIOT_5XX", "Riot server error");
       }
-      throw new RiotApiError("INTERNAL_ERROR", `HTTP ${response.status}`);
+      throw new RiotApiError("INTERNAL_ERROR", `HTTP ${String(response.status)}`);
     }
 
     return response.json();

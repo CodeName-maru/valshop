@@ -3,7 +3,6 @@
  * Worker-specific implementation that takes token objects as parameters
  */
 
-import { decrypt } from "@/lib/crypto/aes-gcm";
 
 /**
  * Storefront API response (simplified)
@@ -103,7 +102,7 @@ export function createStorefrontClient(fetcher: typeof fetch = fetch): Storefron
           throw new StorefrontApiError("Unauthorized: token expired", 401, true);
         }
         throw new StorefrontApiError(
-          `Storefront API error: ${response.status} ${response.statusText}`,
+          `Storefront API error: ${String(response.status)} ${response.statusText}`,
           response.status
         );
       }

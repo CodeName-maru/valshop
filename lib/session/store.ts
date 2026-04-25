@@ -6,7 +6,7 @@
  */
 
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { createUserTokensRepo, type UserTokensRepo } from "@/lib/supabase/user-tokens-repo";
+import { createUserTokensRepo } from "@/lib/supabase/user-tokens-repo";
 import type { UserTokensRow } from "@/lib/supabase/types";
 import type { SessionTokens, ResolvedSession } from "./types";
 import { reauthAccess } from "./reauth";

@@ -26,7 +26,7 @@ export const maxDuration = 60; // Vercel Hobby limit
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // 1. Verify CRON_SECRET
   const authHeader = request.headers.get("authorization");
-  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+  const expectedAuth = `Bearer ${process.env.CRON_SECRET ?? ""}`;
 
   if (!process.env.CRON_SECRET || authHeader !== expectedAuth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

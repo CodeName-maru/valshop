@@ -117,7 +117,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         .eq("needs_reauth", false);
 
       if (error) {
-        throw new Error(`Failed to list active users: ${error.message}`);
+        throw new Error(`Failed to list active users: ${String(error.message)}`);
       }
 
       const rows = (data || []) as Record<string, unknown>[];
@@ -136,7 +136,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
           // Not found
           return null;
         }
-        throw new Error(`Failed to get user tokens: ${error.message}`);
+        throw new Error(`Failed to get user tokens: ${String(error.message)}`);
       }
 
       if (!data) return null;
@@ -150,7 +150,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         .eq("user_id", userId);
 
       if (error) {
-        throw new Error(`Failed to mark needs_reauth: ${error.message}`);
+        throw new Error(`Failed to mark needs_reauth: ${String(error.message)}`);
       }
     },
 
@@ -163,7 +163,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         .single();
 
       if (error) {
-        throw new Error(`Failed to upsert user tokens: ${error.message}`);
+        throw new Error(`Failed to upsert user tokens: ${String(error.message)}`);
       }
       return { user_id: (data as { user_id: string }).user_id };
     },
@@ -191,7 +191,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         .single();
 
       if (error) {
-        throw new Error(`Failed to upsert user tokens: ${error.message}`);
+        throw new Error(`Failed to upsert user tokens: ${String(error.message)}`);
       }
       return { user_id: (data as { user_id: string }).user_id };
     },
@@ -208,7 +208,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
           // Not found
           return null;
         }
-        throw new Error(`Failed to find user tokens by session_id: ${error.message}`);
+        throw new Error(`Failed to find user tokens by session_id: ${String(error.message)}`);
       }
 
       if (!data) return null;
@@ -224,7 +224,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
       // PGRST116는 not found인데, delete는 0 rows도 성공으로 처리
       // error가 있고 code가 PGRST116이 아니면 throw
       if (error && error.code !== "PGRST116") {
-        throw new Error(`Failed to delete user tokens by session_id: ${error.message}`);
+        throw new Error(`Failed to delete user tokens by session_id: ${String(error.message)}`);
       }
     },
 
@@ -235,7 +235,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         .eq("puuid", puuid);
 
       if (error && error.code !== "PGRST116") {
-        throw new Error(`Failed to delete user tokens by puuid: ${error.message}`);
+        throw new Error(`Failed to delete user tokens by puuid: ${String(error.message)}`);
       }
     },
   };

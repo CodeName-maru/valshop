@@ -78,7 +78,7 @@ export function SkinDetailView({ skin }: SkinDetailViewProps) {
               <div key={level.uuid} className="text-center">
                 {level.displayIcon && (
                   <Image
-                    data-testid={`level-image-${index}`}
+                    data-testid={`level-image-${String(index)}`}
                     src={level.displayIcon}
                     alt={level.displayName}
                     width={200}
