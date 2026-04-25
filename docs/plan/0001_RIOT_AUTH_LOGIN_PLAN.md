@@ -1,3 +1,8 @@
+> **DEPRECATED (replaced by plan 0018~0023 auth redesign)**
+> 본 plan 은 Riot implicit-grant redirect 를 전제로 작성됐으나,
+> spec `docs/superpowers/specs/2026-04-24-auth-redesign-design.md` 에 따라
+> PW 프록시 + ssid reauth 패턴으로 전면 재설계됨. 이력 보존 목적으로만 유지.
+
 # Plan 0001: Riot 비공식 auth flow 로그인
 
 ## 개요
