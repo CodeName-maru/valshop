@@ -4,7 +4,6 @@ import { LogoutButton } from "@/components/LogoutButton";
 
 // Mock fetch - 테스트별로 다른 동작을 위해 여기서 설정
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
 
 // Mock next/navigation에서 useRouter 가져오기
 const mockPush = vi.fn();
@@ -17,6 +16,7 @@ vi.mock("next/navigation", () => ({
 describe("Feature: 로그아웃 버튼 — 클라이언트 동작", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", mockFetch);
     // localStorage mock
     localStorage.clear();
     // document.cookie mock
@@ -27,6 +27,7 @@ describe("Feature: 로그아웃 버튼 — 클라이언트 동작", () => {
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     localStorage.clear();
   });
 
