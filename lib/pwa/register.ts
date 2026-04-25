@@ -14,7 +14,7 @@ export function registerServiceWorker(): void {
       .then((registration) => {
         logger.info("SW registered", { scope: registration.scope });
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         logger.error("SW registration failed", { error: error instanceof Error ? error.message : String(error) });
       });
   }
@@ -31,7 +31,7 @@ export function isUpdateAvailable(): Promise<boolean> {
       return;
     }
 
-    navigator.serviceWorker.ready.then((registration) => {
+    void navigator.serviceWorker.ready.then((registration) => {
       if (!registration.waiting) {
         resolve(false);
         return;

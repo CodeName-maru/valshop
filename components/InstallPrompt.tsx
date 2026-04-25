@@ -76,7 +76,7 @@ export function InstallPrompt() {
           <Button variant="ghost" onClick={handleDismiss} className="h-8 px-3 text-xs">
             나중에
           </Button>
-          <Button onClick={handleInstall} className="h-8 px-3 text-xs">
+          <Button onClick={() => void handleInstall()} className="h-8 px-3 text-xs">
             앱으로 설치
           </Button>
         </div>

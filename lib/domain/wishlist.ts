@@ -73,26 +73,28 @@ export function createInMemoryWishlistRepo(): WishlistRepo {
     return set;
   };
   return {
-    async add(userId, skinUuid) {
+    add(userId, skinUuid) {
       const set = ensure(userId);
-      if (set.has(skinUuid)) return;
+      if (set.has(skinUuid)) return Promise.resolve();
       if (set.size >= WISHLIST_LIMIT) {
-        throw new WishlistLimitExceededError();
+        return Promise.reject(new WishlistLimitExceededError());
       }
       set.add(skinUuid);
+      return Promise.resolve();
     },
-    async remove(userId, skinUuid) {
+    remove(userId, skinUuid) {
       const set = store.get(userId);
-      if (!set) return;
+      if (!set) return Promise.resolve();
       set.delete(skinUuid);
+      return Promise.resolve();
     },
-    async listFor(userId) {
+    listFor(userId) {
       const set = store.get(userId);
-      return set ? Array.from(set) : [];
+      return Promise.resolve(set ? Array.from(set) : []);
     },
-    async countFor(userId) {
+    countFor(userId) {
       const set = store.get(userId);
-      return set ? set.size : 0;
+      return Promise.resolve(set ? set.size : 0);
     },
   };
 }

@@ -66,8 +66,8 @@ export function parseNightMarket(storefrontJson: any): NightMarketState {
 /**
  * 야시장 상태 조회 (TODO: 실제 API 연동 필요)
  */
-export async function getNightMarket(): Promise<NightMarketState> {
+export function getNightMarket(): Promise<NightMarketState> {
   // TODO: 실제로는 /api/store 에서 nightMarket 필드를 가져옴
   // 현재는 임시로 비활성 상태 반환
-  return { active: false };
+  return Promise.resolve({ active: false });
 }

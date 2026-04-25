@@ -27,9 +27,9 @@ export class NoopTokenVault implements TokenVault {
     // MVP: no-op
   }
 
-  async get(_userId: string): Promise<EncryptedTokenSet | null> {
+  get(_userId: string): Promise<EncryptedTokenSet | null> {
     // MVP: no-op
-    return null;
+    return Promise.resolve(null);
   }
 
   async delete(_userId: string): Promise<void> {

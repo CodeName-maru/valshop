@@ -16,7 +16,7 @@ export default function WishlistPage() {
 
   useEffect(() => {
     let alive = true;
-    (async () => {
+    void (async () => {
       try {
         const wRes = await fetch("/api/wishlist");
         if (wRes.status === 401) {
@@ -85,7 +85,7 @@ export default function WishlistPage() {
             action={
               <button
                 type="button"
-                onClick={() => remove(skin.uuid)}
+                onClick={() => void remove(skin.uuid)}
                 aria-label="위시리스트에서 제거"
                 data-testid={`wishlist-remove-${skin.uuid}`}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600"
