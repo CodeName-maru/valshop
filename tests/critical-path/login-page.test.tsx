@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
 import {
   loginReducer,
   initialLoginState,
@@ -15,6 +16,9 @@ vi.mock("next/navigation", () => ({
     get: () => null,
   }),
 }));
+
+// MSW server import
+import { mswServer } from "@/vitest.setup";
 
 import LoginPage from "@/app/(app)/login/page";
 import CredentialForm from "@/app/(app)/login/credential-form";
@@ -53,11 +57,9 @@ describe("Feature: Login 2-step FSM", () => {
       const user = userEvent.setup();
 
       // MSW stub - mfa_required 응답
-      const { mswServer } = await import("@/vitest.setup");
       mswServer.use(
-        // @ts-ignore - MSW typing
-        window.msw.http.post("/api/auth/login", () =>
-          window.msw.HttpResponse.json({
+        http.post("/api/auth/login", () =>
+          HttpResponse.json({
             status: "mfa_required",
             email_hint: "j***@gmail.com",
           })
