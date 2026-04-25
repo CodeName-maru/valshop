@@ -462,28 +462,28 @@ Phase 4 (RLS integ)     ── 4-1..4-6 (Phase 2 + Phase 3 모두 필요)
 
 | # | 항목 | 상태 | 비고 |
 |---|------|------|------|
-| 1-1 | `UserTokensRow` / `UpsertTokensInput` 타입 테스트 | ⬜ 미착수 | type-level |
-| 1-impl | `lib/supabase/types.ts` 확장 | ⬜ 미착수 | legacy `UserTokenInsert` 유지 |
-| 2-1 | `upsertTokens` happy path | ⬜ 미착수 | fake client |
-| 2-2 | `findBySessionId` happy path | ⬜ 미착수 | |
-| 2-3 | `findBySessionId` not found → null | ⬜ 미착수 | PGRST116 |
-| 2-4 | `upsertTokens` 중복 puuid last-write-wins | ⬜ 미착수 | onConflict:"puuid" |
-| 2-5 | DB 에러 전파 | ⬜ 미착수 | throw |
-| 2-6 | `deleteBySessionId` 멱등 | ⬜ 미착수 | |
-| 2-7 | `deleteByPuuid` 성공/에러 | ⬜ 미착수 | |
-| 2-impl | `lib/supabase/user-tokens-repo.ts` 4종 신규 API | ⬜ 미착수 | 기존 함수 유지 |
-| 3-1 | 신규 컬럼 스키마 스냅샷 | ⬜ 미착수 | integration |
-| 3-2 | `rate_limit_buckets` 테이블 생성 | ⬜ 미착수 | |
-| 3-3 | `user_tokens_session_id_idx` 존재 | ⬜ 미착수 | |
-| 3-4 | RLS enable 재확인 | ⬜ 미착수 | 두 테이블 |
-| 3-5 | 컬럼 화이트리스트 (PIPA) | ⬜ 미착수 | |
-| 3-6 | idempotent 재실행 | ⬜ 미착수 | 수동 smoke 허용 |
-| 3-impl | `supabase/migrations/0009_auth_redesign.sql` | ⬜ 미착수 | spec § 4-4 그대로 |
-| 4-1 | anon select 거부 | ⬜ 미착수 | Security NFR |
-| 4-2 | anon insert 거부 | ⬜ 미착수 | |
-| 4-3 | anon `ssid_enc`/`tdid_enc` 거부 | ⬜ 미착수 | |
-| 4-4 | service_role 우회 | ⬜ 미착수 | |
-| 4-5 | `rate_limit_buckets` anon 거부 | ⬜ 미착수 | |
-| 4-6 | repo 왕복 smoke | ⬜ 미착수 | upsert→find→delete |
+| 1-1 | `UserTokensRow` / `UpsertTokensInput` 타입 테스트 | ✅ 완료 | type-level |
+| 1-impl | `lib/supabase/types.ts` 확장 | ✅ 완료 | legacy `UserTokenInsert` 유지 |
+| 2-1 | `upsertTokens` happy path | ✅ 완료 | fake client |
+| 2-2 | `findBySessionId` happy path | ✅ 완료 | |
+| 2-3 | `findBySessionId` not found → null | ✅ 완료 | PGRST116 |
+| 2-4 | `upsertTokens` 중복 puuid last-write-wins | ✅ 완료 | onConflict:"puuid" |
+| 2-5 | DB 에러 전파 | ✅ 완료 | throw |
+| 2-6 | `deleteBySessionId` 멱등 | ✅ 완료 | |
+| 2-7 | `deleteByPuuid` 성공/에러 | ✅ 완료 | |
+| 2-impl | `lib/supabase/user-tokens-repo.ts` 4종 신규 API | ✅ 완료 | 기존 함수 유지 |
+| 3-1 | 신규 컬럼 스키마 스냅샷 | ✅ 완료 | integration (env 없음 skip) |
+| 3-2 | `rate_limit_buckets` 테이블 생성 | ✅ 완료 | |
+| 3-3 | `user_tokens_session_id_idx` 존재 | ✅ 완료 | |
+| 3-4 | RLS enable 재확인 | ✅ 완료 | 두 테이블 |
+| 3-5 | 컬럼 화이트리스트 (PIPA) | ✅ 완료 | |
+| 3-6 | idempotent 재실행 | ✅ 완료 | 수동 smoke 허용 |
+| 3-impl | `supabase/migrations/0009_auth_redesign.sql` | ✅ 완료 | spec § 4-4 그대로 |
+| 4-1 | anon select 거부 | ✅ 완료 | Security NFR |
+| 4-2 | anon insert 거부 | ✅ 완료 | |
+| 4-3 | anon `ssid_enc`/`tdid_enc` 거부 | ✅ 완료 | |
+| 4-4 | service_role 우회 | ✅ 완료 | |
+| 4-5 | `rate_limit_buckets` anon 거부 | ✅ 완료 | |
+| 4-6 | repo 왕복 smoke | ✅ 완료 | upsert→find→delete |
 
 **상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
