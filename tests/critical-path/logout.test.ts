@@ -1,8 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { testApiHandler } from "next-test-api-route-handler";
 import * as handler from "@/app/api/auth/logout/route";
 
+const APP_ORIGIN = "https://valshop.vercel.app";
+
 describe("Feature: 로그아웃 — 서버 토큰 파기", () => {
+  beforeEach(() => {
+    process.env.APP_ORIGIN = APP_ORIGIN;
+  });
+
+  afterEach(() => {
+    delete process.env.APP_ORIGIN;
+  });
   describe("Scenario: 유효한 세션 cookie 로 로그아웃 호출", () => {
     it("given유효세션쿠키_when로그아웃POST_then세션쿠키Max-Age0으로덮어쓰기", async () => {
       // Given: 암호화된 토큰이 담긴 session cookie 를 가진 유저
@@ -12,8 +21,8 @@ describe("Feature: 로그아웃 — 서버 토큰 파기", () => {
         requestPatcher: (req) => { req.headers.set("cookie", "session=ENC_PAYLOAD"); },
         test: async ({ fetch }) => {
           const res = await fetch({
-            method: "POST",
-            headers: { Accept: "application/json" },
+            method: "DELETE",
+            headers: { Accept: "application/json", Origin: APP_ORIGIN },
           });
           // Then: 200, Set-Cookie 에 Max-Age=0, body { ok: true }
           expect(res.status).toBe(200);
@@ -38,8 +47,8 @@ describe("Feature: 로그아웃 — 서버 토큰 파기", () => {
         appHandler: handler,
         test: async ({ fetch }) => {
           const res = await fetch({
-            method: "POST",
-            headers: { Accept: "application/json" },
+            method: "DELETE",
+            headers: { Accept: "application/json", Origin: APP_ORIGIN },
           });
           // Then: 200 OK + Set-Cookie 파기 헤더 (이미 없어도 안전)
           expect(res.status).toBe(200);
@@ -61,8 +70,8 @@ describe("Feature: 로그아웃 — 서버 토큰 파기", () => {
         requestPatcher: (req) => { req.headers.set("cookie", "session=ENC_PAYLOAD"); },
         test: async ({ fetch }) => {
           const res = await fetch({
-            method: "POST",
-            headers: { Accept: "application/json" },
+            method: "DELETE",
+            headers: { Accept: "application/json", Origin: APP_ORIGIN },
           });
           // Then: 항상 200 반환 (MVP에서는 no-op)
           expect(res.status).toBe(200);
@@ -79,8 +88,8 @@ describe("Feature: 로그아웃 — 서버 토큰 파기", () => {
         appHandler: handler,
         test: async ({ fetch }) => {
           const res = await fetch({
-            method: "POST",
-            headers: { Accept: "application/json" },
+            method: "DELETE",
+            headers: { Accept: "application/json", Origin: APP_ORIGIN },
           });
           // Then: 쿠키 파기는 항상 실행됨
           expect(res.status).toBe(200);

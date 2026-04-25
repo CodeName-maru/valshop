@@ -50,7 +50,7 @@ describe("Feature: 로그아웃 버튼 — 클라이언트 동작", () => {
       // Then: fetch("/api/auth/logout", { method:"POST" }) 호출
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/auth/logout", {
-          method: "POST",
+          method: "DELETE",
           headers: expect.objectContaining({
             Accept: "application/json",
           }),
