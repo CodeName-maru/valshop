@@ -50,7 +50,7 @@ export function LogoutButton() {
       // 2. 서버 로그아웃 시도 (실패해도 진행)
       try {
         await fetch("/api/auth/logout", {
-          method: "POST",
+          method: "DELETE",
           headers: {
             Accept: "application/json",
           },
