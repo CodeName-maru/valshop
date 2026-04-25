@@ -19,10 +19,30 @@ function calculateOriginalPrice(discountedPrice: number, discountPercent: number
 }
 
 /**
+ * Riot storefront BonusStore offer schema (subset relied on by parser).
+ */
+interface RawBonusOffer {
+  Offer?: {
+    Rewards?: { ItemID?: string }[];
+    Cost?: Record<string, number>;
+    DiscountPercent?: number;
+    IsSeen?: boolean;
+  };
+}
+
+interface RawBonusStore {
+  BonusStoreOffers?: RawBonusOffer[];
+  BonusStoreRemainingDurationInSeconds?: number;
+}
+
+/**
  * storefront 응답에서 야시장 상태 파싱
  */
-export function parseNightMarket(storefrontJson: any): NightMarketState {
-  const bonusStore = storefrontJson?.BonusStore;
+export function parseNightMarket(storefrontJson: unknown): NightMarketState {
+  if (!storefrontJson || typeof storefrontJson !== "object") {
+    return { active: false };
+  }
+  const bonusStore = (storefrontJson as { BonusStore?: RawBonusStore }).BonusStore;
 
   if (!bonusStore || !bonusStore.BonusStoreOffers) {
     return { active: false };
@@ -34,8 +54,8 @@ export function parseNightMarket(storefrontJson: any): NightMarketState {
     return { active: false };
   }
 
-  const items: NightMarketItem[] = offers.map((offer: any) => {
-    const offerData = offer.Offer;
+  const items: NightMarketItem[] = offers.map((offer) => {
+    const offerData = offer.Offer ?? {};
     const reward = offerData.Rewards?.[0];
 
     const discountedPrice = offerData.Cost?.[VP_UUID] ?? 0;

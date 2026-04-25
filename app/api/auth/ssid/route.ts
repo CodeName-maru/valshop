@@ -100,21 +100,16 @@ export async function POST(req: NextRequest) {
   let region: string;
 
   try {
-    const body = await req.json();
-    ssid = body.ssid;
-    tdid = body.tdid;
-    region = body.region || "kr";
-
-    if (typeof ssid !== "string") {
+    const body = (await req.json()) as { ssid?: unknown; tdid?: unknown; region?: unknown };
+    if (typeof body.ssid !== "string") {
       return NextResponse.json(
         { code: "session_expired" as AuthErrorCode },
         { status: 401 }
       );
     }
-
-    if (tdid !== undefined && typeof tdid !== "string") {
-      tdid = undefined;
-    }
+    ssid = body.ssid;
+    tdid = typeof body.tdid === "string" ? body.tdid : undefined;
+    region = typeof body.region === "string" && body.region ? body.region : "kr";
   } catch {
     return NextResponse.json(
       { code: "session_expired" as AuthErrorCode },
@@ -168,8 +163,8 @@ export async function POST(req: NextRequest) {
         const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
         const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
         const decoded = atob(padded);
-        const payload = JSON.parse(decoded);
-        const puuid = payload.sub as string;
+        const payload = JSON.parse(decoded) as { sub?: string };
+        const puuid = payload.sub ?? "";
 
         if (!puuid) {
           logger.error("auth.ssid.puuid_missing");
@@ -236,7 +231,7 @@ export async function POST(req: NextRequest) {
       }
 
       default: {
-        logger.error("auth.ssid.unknown_kind", { kind: (reauthResult as any).kind });
+        logger.error("auth.ssid.unknown_kind", { kind: (reauthResult as { kind: string }).kind });
         return NextResponse.json(
           { code: "unknown" as AuthErrorCode },
           { status: 500 }

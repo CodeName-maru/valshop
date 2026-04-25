@@ -43,7 +43,7 @@ function DashboardContent() {
       const response = await fetch("/api/store");
 
       if (!response.ok) {
-        const body = await response.json();
+        const body = (await response.json()) as ErrorResponse;
 
         // 401 (TOKEN_EXPIRED) 는 자동 리다이렉트
         if (response.status === 401 || body.code === "TOKEN_EXPIRED") {
@@ -52,12 +52,12 @@ function DashboardContent() {
         }
 
         // 그 외 에러는 상태에 저장
-        setError(body as ErrorResponse);
+        setError(body);
         return;
       }
 
-      const data = await response.json();
-      setSkins(data.cards || []);
+      const data = (await response.json()) as { cards?: SkinCard[] };
+      setSkins(data.cards ?? []);
     } catch (err) {
       // 네트워크 에러 등
       setError({

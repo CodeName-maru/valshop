@@ -7,6 +7,7 @@
  * so that domain code (worker / cron / etc.) only ever sees `Uint8Array`.
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserTokensRow, UserTokenInsert, UpsertTokensInput } from "./types";
 import { parseBytea, encodeBytea, BytEaParseError } from "./bytea";
 
@@ -108,7 +109,7 @@ export interface UserTokensRepo {
  * @param supabase - Supabase client (service role)
  * @returns UserTokensRepo instance
  */
-export function createUserTokensRepo(supabase: any): UserTokensRepo {
+export function createUserTokensRepo(supabase: SupabaseClient): UserTokensRepo {
   return {
     async listActive(): Promise<UserTokensRow[]> {
       const { data, error } = await supabase
@@ -120,27 +121,27 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         throw new Error(`Failed to list active users: ${error.message}`);
       }
 
-      const rows = (data || []) as Record<string, unknown>[];
+      const rows = data as Record<string, unknown>[];
       return rows.map(normalizeRow);
     },
 
     async get(userId: string): Promise<UserTokensRow | null> {
-      const { data, error } = await supabase
+      const result = await supabase
         .from("user_tokens")
         .select("*")
         .eq("user_id", userId)
         .single();
 
-      if (error) {
-        if (error.code === "PGRST116") {
+      if (result.error) {
+        if (result.error.code === "PGRST116") {
           // Not found
           return null;
         }
-        throw new Error(`Failed to get user tokens: ${error.message}`);
+        throw new Error(`Failed to get user tokens: ${result.error.message}`);
       }
 
-      if (!data) return null;
-      return normalizeRow(data as Record<string, unknown>);
+      if (!result.data) return null;
+      return normalizeRow(result.data as Record<string, unknown>);
     },
 
     async markNeedsReauth(userId: string): Promise<void> {
@@ -165,7 +166,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
       if (error) {
         throw new Error(`Failed to upsert user tokens: ${error.message}`);
       }
-      return { user_id: (data as { user_id: string }).user_id };
+      return { user_id: String(data.user_id) };
     },
 
     // === Plan 0018 FR-R1: 신규 API ===
@@ -193,26 +194,26 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
       if (error) {
         throw new Error(`Failed to upsert user tokens: ${error.message}`);
       }
-      return { user_id: (data as { user_id: string }).user_id };
+      return { user_id: String(data.user_id) };
     },
 
     async findBySessionId(sessionId: string): Promise<UserTokensRow | null> {
-      const { data, error } = await supabase
+      const result = await supabase
         .from("user_tokens")
         .select("*")
         .eq("session_id", sessionId)
         .single();
 
-      if (error) {
-        if (error.code === "PGRST116") {
+      if (result.error) {
+        if (result.error.code === "PGRST116") {
           // Not found
           return null;
         }
-        throw new Error(`Failed to find user tokens by session_id: ${error.message}`);
+        throw new Error(`Failed to find user tokens by session_id: ${result.error.message}`);
       }
 
-      if (!data) return null;
-      return normalizeRow(data as Record<string, unknown>);
+      if (!result.data) return null;
+      return normalizeRow(result.data as Record<string, unknown>);
     },
 
     async deleteBySessionId(sessionId: string): Promise<void> {

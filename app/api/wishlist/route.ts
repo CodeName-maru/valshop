@@ -66,10 +66,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch {
     return err("bad_request", 400);
   }
-  const skinId =
-    body && typeof body === "object" && typeof (body as any).skinId === "string"
-      ? ((body as any).skinId as string).trim()
-      : "";
+  const rawSkinId =
+    body && typeof body === "object"
+      ? (body as { skinId?: unknown }).skinId
+      : undefined;
+  const skinId = typeof rawSkinId === "string" ? rawSkinId.trim() : "";
   if (!skinId) return err("bad_request", 400);
 
   let supabase;

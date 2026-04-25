@@ -60,7 +60,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const resend = {
       emails: {
         send: async (params: { to: string | string[]; subject: string; html: string; text?: string }): Promise<{ id: string }> => {
-          const { data, error } = await resendClient.emails.send(params as any);
+          // Resend SDK CreateEmailOptions 요구: from 필드는 worker에서 주입하므로 cast.
+          const { data, error } = await resendClient.emails.send(
+            params as unknown as Parameters<typeof resendClient.emails.send>[0]
+          );
           if (error) {
             throw new Error(`Resend send failed: ${error.name ?? "unknown"} — ${error.message ?? ""}`);
           }

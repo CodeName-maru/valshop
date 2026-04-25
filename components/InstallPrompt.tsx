@@ -4,6 +4,19 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 
 /**
+ * BeforeInstallPromptEvent는 표준이 아니지만 Chromium 계열에서 제공하는 PWA 설치 트리거.
+ */
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
+
+interface DismissedState {
+  count: number;
+  until: number;
+}
+
+/**
  * PWA 설치 배너 컴포넌트
  *
  * - beforeinstallprompt 이벤트 가로채기
@@ -18,7 +31,7 @@ export function InstallPrompt() {
     // localStorage에서 dismissed 상태 복원
     const stored = localStorage.getItem("pwa:dismissed");
     if (stored) {
-      const { until } = JSON.parse(stored);
+      const { until } = JSON.parse(stored) as DismissedState;
       if (until > Date.now()) {
         setDismissedUntil(until);
       }
@@ -40,8 +53,8 @@ export function InstallPrompt() {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
-    const promptEvent = deferredPrompt as any;
-    promptEvent.prompt();
+    const promptEvent = deferredPrompt as BeforeInstallPromptEvent;
+    await promptEvent.prompt();
 
     const { outcome } = await promptEvent.userChoice;
     if (outcome === "accepted") {
@@ -53,7 +66,7 @@ export function InstallPrompt() {
     const stored = localStorage.getItem("pwa:dismissed");
     let count = 0;
     if (stored) {
-      const parsed = JSON.parse(stored);
+      const parsed = JSON.parse(stored) as DismissedState;
       count = parsed.count;
     }
 

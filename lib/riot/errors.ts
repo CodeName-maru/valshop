@@ -66,7 +66,7 @@ export async function classifyRiotResponse(
   // 400 클라이언트 버전 불일치 체크
   if (status === 400) {
     try {
-      const body = await res.json();
+      const body = (await res.json()) as { errorCode?: string };
       if (body.errorCode === "INVALID_CLIENT_VERSION") {
         return {
           code: "CLIENT_VERSION_MISMATCH",

@@ -105,7 +105,8 @@ export async function withRateLimit(
     }
 
     // 기존 bucket: 윈도우 만료 검증
-    const existingWindowStart = new Date(existing.window_start);
+    const existingRow = existing as { count: number; window_start: string };
+    const existingWindowStart = new Date(existingRow.window_start);
     if (existingWindowStart < windowStart) {
       // 윈도우 만료: reset to 1
       const { error: resetError } = await supabase
@@ -123,7 +124,7 @@ export async function withRateLimit(
     }
 
     // 윈도우 내: count 증가
-    const newCount = (existing.count as number) + 1;
+    const newCount = existingRow.count + 1;
 
     if (newCount > opts.limit) {
       // 초과: 429 반환
