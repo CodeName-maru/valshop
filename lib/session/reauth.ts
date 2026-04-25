@@ -41,6 +41,11 @@ export async function reauthAccess(
       return { kind: "upstream" };
     }
 
+    // 429: Cloudflare throttle 등 transient. 세션을 만료시키지 말고 upstream 으로 정규화.
+    if (authResult.kind === "rate_limited") {
+      return { kind: "upstream" };
+    }
+
     // authResult.kind === "ok"
     // entitlements 재교환
     let entitlementsJwt: string;

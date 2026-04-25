@@ -227,6 +227,14 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      case "rate_limited": {
+        logger.warn("auth.ssid.rate_limited");
+        return NextResponse.json(
+          { code: "rate_limited" as AuthErrorCode },
+          { status: 429 }
+        );
+      }
+
       case "upstream": {
         logger.error("auth.ssid.upstream_error");
         return NextResponse.json(

@@ -365,6 +365,46 @@ describe("auth-client", () => {
     });
   });
 
+  describe("Test 2-12b: reauthWithSsid 는 redirect:'manual' 옵션을 fetch 에 전달", () => {
+    it("givenSsid_whenReauthWithSsid_thenFetchInitContainsRedirectManual", async () => {
+      // Given: 임의 redirect 응답 (assertion 대상은 fetch init 옵션)
+      const { fetcher, queue } = createMockFetcher();
+
+      const redirectResponse = new Response(null, {
+        status: 303,
+        headers: {
+          Location: "https://playvalorant.com/opt_in#access_token=at&id_token=id",
+        },
+      });
+      queue(redirectResponse);
+
+      // When
+      await reauthWithSsid("ssid-blob", undefined, fetcher);
+
+      // Then: Node fetch 가 302/303 을 자동 follow 하지 않도록 redirect:"manual" 이 주입돼야 한다
+      expect(fetcher.fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          redirect: "manual",
+        }),
+      );
+    });
+  });
+
+  describe("Test 2-13: reauthWithSsid 429 → {kind:\"rate_limited\"}", () => {
+    it("givenRiot429_whenReauthWithSsid_thenReturnsRateLimited", async () => {
+      // Given: Cloudflare throttle 등으로 429 응답
+      const { fetcher, queue } = createMockFetcher();
+
+      const rateLimitedResponse = new Response(null, { status: 429 });
+      queue(rateLimitedResponse);
+
+      // When / Then: expired 가 아닌 rate_limited 로 분기되어야 한다 (강제 로그아웃 루프 방지)
+      const result = await reauthWithSsid("ssid", undefined, fetcher);
+      expect(result).toEqual({ kind: "rate_limited" });
+    });
+  });
+
   describe("Test 2-14: exchangeEntitlements 성공", () => {
     it("givenAccessToken_whenExchangeEntitlements_thenReturnsJwt", async () => {
       // Given: fetcher 가 {entitlements_token:"ejw..."} 응답
