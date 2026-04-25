@@ -1,7 +1,8 @@
-import { vi } from "vitest";
+import { vi, beforeAll, afterAll, afterEach } from "vitest";
 import "@testing-library/jest-dom";
 import { setupServer } from "msw/node";
 import { defaultRiotHandlers } from "./tests/critical-path/_msw/riot-handlers";
+import { cleanup } from "@testing-library/react";
 
 // MSW server setup for API mocking
 export const mswServer = setupServer(...defaultRiotHandlers);
@@ -14,6 +15,7 @@ beforeAll(() => {
 // Reset handlers after each test
 afterEach(() => {
   mswServer.resetHandlers();
+  cleanup();
 });
 
 // Cleanup after all tests

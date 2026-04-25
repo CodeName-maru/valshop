@@ -41,3 +41,47 @@ export class NoopTokenVault implements TokenVault {
  * Singleton 인스턴스
  */
 export const tokenVault = new NoopTokenVault();
+
+// ============================================================================
+// Phase 2: Server-side token vault for worker use
+// ============================================================================
+
+import { decrypt } from "@/lib/crypto/aes-gcm";
+
+/**
+ * Decrypted session tokens for API calls (Phase 2)
+ */
+export interface DecryptedTokens {
+  puuid: string;
+  accessToken: string;
+  refreshToken: string;
+  entitlementsJwt: string;
+}
+
+/**
+ * Decrypt tokens from encrypted values (Phase 2)
+ *
+ * @param accessTokenEnc - Base64-encoded encrypted access token
+ * @param refreshTokenEnc - Base64-encoded encrypted refresh token
+ * @param entitlementsJwtEnc - Base64-encoded encrypted entitlements JWT
+ * @param key - Decryption key
+ * @returns Decrypted tokens
+ */
+export async function decryptTokens(
+  accessTokenEnc: string,
+  refreshTokenEnc: string,
+  entitlementsJwtEnc: string,
+  key: CryptoKey
+): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  entitlementsJwt: string;
+}> {
+  const [accessToken, refreshToken, entitlementsJwt] = await Promise.all([
+    decrypt(accessTokenEnc, key),
+    decrypt(refreshTokenEnc, key),
+    decrypt(entitlementsJwtEnc, key),
+  ]);
+
+  return { accessToken, refreshToken, entitlementsJwt };
+}

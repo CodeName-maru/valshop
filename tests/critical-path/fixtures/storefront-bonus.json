@@ -1,0 +1,116 @@
+{
+  "Offers": [],
+  "BonusStore": {
+    "BonusStoreOffers": [
+      {
+        "Offer": {
+          "OfferID": "bonus-offer-1",
+          "IsDirectPurchase": true,
+          "Cost": {
+            "85ad13f7-3d1b-508f-8c90-63da8c3c76d5": 1000
+          },
+          "Rewards": [
+            {
+              "ItemTypeID": "test-skin-1",
+              "ItemID": "bonus-skin-uuid-1",
+              "Quantity": 1
+            }
+          ],
+          "DiscountPercent": 40,
+          "IsSeen": true
+        }
+      },
+      {
+        "Offer": {
+          "OfferID": "bonus-offer-2",
+          "IsDirectPurchase": true,
+          "Cost": {
+            "85ad13f7-3d1b-508f-8c90-63da8c3c76d5": 1200
+          },
+          "Rewards": [
+            {
+              "ItemTypeID": "test-skin-2",
+              "ItemID": "bonus-skin-uuid-2",
+              "Quantity": 1
+            }
+          ],
+          "DiscountPercent": 30,
+          "IsSeen": true
+        }
+      },
+      {
+        "Offer": {
+          "OfferID": "bonus-offer-3",
+          "IsDirectPurchase": true,
+          "Cost": {
+            "85ad13f7-3d1b-508f-8c90-63da8c3c76d5": 800
+          },
+          "Rewards": [
+            {
+              "ItemTypeID": "test-skin-3",
+              "ItemID": "bonus-skin-uuid-3",
+              "Quantity": 1
+            }
+          ],
+          "DiscountPercent": 50,
+          "IsSeen": true
+        }
+      },
+      {
+        "Offer": {
+          "OfferID": "bonus-offer-4",
+          "IsDirectPurchase": true,
+          "Cost": {
+            "85ad13f7-3d1b-508f-8c90-63da8c3c76d5": 1500
+          },
+          "Rewards": [
+            {
+              "ItemTypeID": "test-skin-4",
+              "ItemID": "bonus-skin-uuid-4",
+              "Quantity": 1
+            }
+          ],
+          "DiscountPercent": 20,
+          "IsSeen": true
+        }
+      },
+      {
+        "Offer": {
+          "OfferID": "bonus-offer-5",
+          "IsDirectPurchase": true,
+          "Cost": {
+            "85ad13f7-3d1b-508f-8c90-63da8c3c76d5": 1100
+          },
+          "Rewards": [
+            {
+              "ItemTypeID": "test-skin-5",
+              "ItemID": "bonus-skin-uuid-5",
+              "Quantity": 1
+            }
+          ],
+          "DiscountPercent": 35,
+          "IsSeen": true
+        }
+      },
+      {
+        "Offer": {
+          "OfferID": "bonus-offer-6",
+          "IsDirectPurchase": true,
+          "Cost": {
+            "85ad13f7-3d1b-508f-8c90-63da8c3c76d5": 900
+          },
+          "Rewards": [
+            {
+              "ItemTypeID": "test-skin-6",
+              "ItemID": "bonus-skin-uuid-6",
+              "Quantity": 1
+            }
+          ],
+          "DiscountPercent": 45,
+          "IsSeen": true
+        }
+      }
+    ],
+    "BonusStoreRemainingDurationInSeconds": 86400
+  }
+}
