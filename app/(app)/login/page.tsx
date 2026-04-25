@@ -42,7 +42,7 @@ type LoginEvent =
 /**
  * 초기 상태
  */
-export const initialLoginState: LoginState = {
+const initialLoginState: LoginState = {
   status: "credential",
   error: null,
   emailHint: null,
@@ -54,7 +54,7 @@ export const initialLoginState: LoginState = {
  *
  * spec § 4-3 전이표의 1:1 구현
  */
-export function loginReducer(state: LoginState, event: LoginEvent): LoginState {
+function loginReducer(state: LoginState, event: LoginEvent): LoginState {
   switch (state.status) {
     case "credential":
       if (event.type === "SUBMIT_CREDENTIAL") {
