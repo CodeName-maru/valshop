@@ -5,8 +5,12 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderToString } from "react-dom/server";
+import { nextNavigationMockFactory } from "@/tests/helpers/next-navigation-mock";
 import DashboardPage from "@/app/(app)/dashboard/page";
 import { RiotApiError } from "@/lib/riot/fetcher";
+
+// Provide App Router context for any client components rendered in SSR.
+vi.mock("next/navigation", () => nextNavigationMockFactory());
 
 // Mock dependencies
 vi.mock("@/lib/session/guard", () => ({
@@ -153,8 +157,10 @@ describe("Feature: Dashboard SSR 통합", () => {
       );
 
       // When & Then: redirect 함수가 호출되어야 함
-      // Note: 실제 redirect는 Next.js 내부에서 처리되므로 에러 발생만 확인
-      await expect(DashboardPage()).rejects.toThrow();
+      // Note: redirect()는 동기적으로 throw → Promise 로 감싸 rejects 검증
+      await expect(Promise.resolve().then(() => renderToString(DashboardPage()))).rejects.toThrow(
+        /NEXT_REDIRECT/
+      );
     });
   });
 });
