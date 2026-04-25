@@ -67,6 +67,7 @@ export type MfaResult =
 export type ReauthResult =
   | { kind: "ok"; accessToken: string; idToken: string }
   | { kind: "expired" }
+  | { kind: "rate_limited" }
   | { kind: "upstream" };
 
 /**
@@ -382,13 +383,18 @@ export async function reauthWithSsid(
         Cookie: cookieValues.join("; "),
       },
       signal,
-      // redirect: "manual" equivalent - we handle Location header ourselves
+      // 302/303 Location 헤더의 fragment(#access_token=...)를 직접 파싱해야
+      // 하므로 자동 follow 를 차단한다 (Node fetch 기본은 follow).
+      redirect: "manual",
     });
 
     // Set-Cookie 저장
     await jar.storeFromResponse(url, response);
 
     // 상태 코드 기반 분류
+    if (response.status === 429) {
+      return { kind: "rate_limited" };
+    }
     if (response.status >= 500) {
       return { kind: "upstream" };
     }
