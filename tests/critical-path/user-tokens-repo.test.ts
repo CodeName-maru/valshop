@@ -80,9 +80,9 @@ describe("createUserTokensRepo", () => {
     });
     const repo = createUserTokensRepo(client);
     const row = await repo.get("u1");
-    expect(row).not.toBeNull();
-    expect(row!.access_token_enc).toBeInstanceOf(Uint8Array);
-    expect(Array.from(row!.access_token_enc)).toEqual([0x48, 0x55]);
+    if (row === null) throw new Error("expected row to be non-null");
+    expect(row.access_token_enc).toBeInstanceOf(Uint8Array);
+    expect(Array.from(row.access_token_enc)).toEqual([0x48, 0x55]);
   });
 
   it("Test 2-3: get throws BytEaParseError with column label on invalid bytea", async () => {

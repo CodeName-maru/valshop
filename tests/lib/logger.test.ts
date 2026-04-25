@@ -14,7 +14,7 @@ describe("lib/logger", () => {
     stdoutCapture = [];
     originalLog = console.log;
     _resetLogLevelCache(); // Reset log level cache between tests
-    // eslint-disable-next-line no-console
+     
     console.log = (...args: unknown[]) => {
       stdoutCapture.push(args.map(String).join(" "));
     };
@@ -115,7 +115,7 @@ describe("lib/logger", () => {
       const a: Record<string, unknown> = {};
       a.self = a;
 
-      expect(() => logger.info("circ", a)).not.toThrow();
+      expect(() => { logger.info("circ", a); }).not.toThrow();
 
       const log = parseLastLog();
       expect(log?.self).toBe("[CIRCULAR]");
@@ -126,7 +126,7 @@ describe("lib/logger", () => {
       const b: Record<string, unknown> = { name: "b", parent: a };
       a.child = b;
 
-      expect(() => logger.info("deep circ", a)).not.toThrow();
+      expect(() => { logger.info("deep circ", a); }).not.toThrow();
 
       const log = parseLastLog();
       expect(log?.child?.parent).toBe("[CIRCULAR]");
@@ -229,7 +229,7 @@ describe("lib/logger", () => {
       const obj: Record<string, unknown> = {};
       obj.circular = obj;
 
-      expect(() => logger.error("test", obj)).not.toThrow();
+      expect(() => { logger.error("test", obj); }).not.toThrow();
 
       const log = parseLastLog();
       expect(log).toHaveProperty("level");

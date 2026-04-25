@@ -15,30 +15,30 @@ import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[auth.logout] ${msg}`, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.logout] ${msg}`, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.logout] ${msg}`, meta),
+  info: (msg: string, meta?: Record<string, unknown>) => { realLogger.info(`[auth.logout] ${msg}`, meta); },
+  warn: (msg: string, meta?: Record<string, unknown>) => { realLogger.warn(`[auth.logout] ${msg}`, meta); },
+  error: (msg: string, meta?: Record<string, unknown>) => { realLogger.error(`[auth.logout] ${msg}`, meta); },
 };
 
 /**
  * GET 요청은 405 Method Not Allowed
  */
 export async function GET() {
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
  * POST 요청은 405 Method Not Allowed (Plan 0005의 POST 경로 삭제)
  */
 export async function POST() {
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
  * PUT 요청은 405 Method Not Allowed
  */
 export async function PUT() {
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**

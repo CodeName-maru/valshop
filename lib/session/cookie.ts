@@ -5,6 +5,7 @@
  * payload 를 `encryptSession()` 로 암호화한 뒤 Set-Cookie 헤더를 조립한다.
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated -- 이 파일은 SessionPayload 기반 MVP cookie 세션 구현체. ResolvedSession 으로의 마이그레이션은 ADR-0002 Phase 2 (Supabase user_tokens) 완료 후 진행. */
 import type { SessionPayload } from "./types";
 import { encryptSession } from "./crypto";
 

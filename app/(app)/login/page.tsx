@@ -167,7 +167,7 @@ function LoginPageInner() {
       }
     };
     window.addEventListener("pageshow", onShow);
-    return () => window.removeEventListener("pageshow", onShow);
+    return () => { window.removeEventListener("pageshow", onShow); };
   }, [state.status]);
 
   const handleCredentialSubmit = async ({

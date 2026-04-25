@@ -12,7 +12,7 @@ describe("Feature: PWA 설치 가능", () => {
   describe("Scenario: Chrome 설치 배너 최소 요건", () => {
     it("Given manifest, When 검사, Then name/short_name/start_url/display/icons(192,512) 모두 존재", () => {
       // Given: 파일 로드
-      const m = manifest as any;
+      const m = manifest;
       // When/Then
       expect(m.name).toBe("VAL-Shop");
       expect(m.short_name).toBeTruthy();
@@ -26,17 +26,17 @@ describe("Feature: PWA 설치 가능", () => {
     });
 
     it("Given manifest, When 검사, Then scope 이 / 이다", () => {
-      const m = manifest as any;
+      const m = manifest;
       expect(m.scope).toBe("/");
     });
 
     it("Given manifest, When 검사, Then lang 이 ko 이다", () => {
-      const m = manifest as any;
+      const m = manifest;
       expect(m.lang).toBe("ko");
     });
 
     it("givenManifest_whenIconsReferenced_thenFilesExistOnDisk", () => {
-      const m = manifest as any;
+      const m = manifest;
       for (const icon of m.icons) {
         const p = join(__dirname, "../../public", icon.src);
         expect(existsSync(p)).toBe(true);
@@ -44,7 +44,7 @@ describe("Feature: PWA 설치 가능", () => {
     });
 
     it("givenReferencedIcons_whenReadingBytes_thenValidPngWithDeclaredSize", () => {
-      for (const icon of (manifest as any).icons) {
+      for (const icon of (manifest).icons) {
         const buf = readFileSync(join(__dirname, "../../public", icon.src));
         expect(buf.subarray(0, 8).equals(PNG_SIGNATURE)).toBe(true);
         const width = buf.readUInt32BE(16);

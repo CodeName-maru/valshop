@@ -63,7 +63,7 @@ describe("Plan 0011 Phase 1: lib/session/crypto", () => {
     const { encryptSession, decryptSession } = await import("@/lib/session/crypto");
     const ct = await encryptSession(basePayload());
     const buf = Buffer.from(ct, "base64");
-    buf[buf.length - 1] = buf[buf.length - 1]! ^ 0x01;
+    buf[buf.length - 1] = (buf[buf.length - 1] ?? 0) ^ 0x01;
     const tampered = buf.toString("base64");
     await expect(decryptSession(tampered)).rejects.toThrow();
   });

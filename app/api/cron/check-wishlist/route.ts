@@ -62,9 +62,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         send: async (params: { to: string | string[]; subject: string; html: string; text?: string }): Promise<{ id: string }> => {
           const { data, error } = await resendClient.emails.send(params as any);
           if (error) {
-            throw new Error(`Resend send failed: ${error.name ?? "unknown"} — ${error.message ?? ""}`);
+            throw new Error(`Resend send failed: ${error.name} — ${error.message}`);
           }
-          if (!data?.id) {
+          if (!data.id) {
             throw new Error("Resend send returned no message id");
           }
           return { id: data.id };

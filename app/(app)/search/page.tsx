@@ -20,7 +20,7 @@ export default function SearchPage() {
   const deferred = useDeferredValue(query);
 
   useEffect(() => {
-    let alive = true;
+    let alive = true as boolean;
     (async () => {
       try {
         const [cRes, wRes] = await Promise.all([
@@ -62,7 +62,7 @@ export default function SearchPage() {
       <input
         type="search"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => { setQuery(e.target.value); }}
         placeholder="스킨 이름 검색"
         aria-label="스킨 이름 검색"
         data-testid="search-input"
@@ -94,7 +94,7 @@ export default function SearchPage() {
                 }}
                 onError={(m) => {
                   setToast(m);
-                  setTimeout(() => setToast(null), 4000);
+                  setTimeout(() => { setToast(null); }, 4000);
                 }}
               />
             }

@@ -30,7 +30,7 @@ export function InstallPrompt() {
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return () => { window.removeEventListener("beforeinstallprompt", handler); };
   }, []);
 
   if (!deferredPrompt || (dismissedUntil && dismissedUntil > Date.now())) {
@@ -38,8 +38,6 @@ export function InstallPrompt() {
   }
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-
     const promptEvent = deferredPrompt as any;
     promptEvent.prompt();
 

@@ -66,7 +66,7 @@ describe("Feature: Store Proxy", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockStorefrontResponse,
-      } as unknown as Response);
+      });
 
       // When: GET /api/store
       // Note: 실제 구현에서는 session cookie를 mocking해야 함
@@ -99,7 +99,7 @@ describe("Feature: Store Proxy", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockStorefrontResponse,
-      } as unknown as Response);
+      });
 
       // When: getTodayStore(session) - 실제 구현 후 테스트
       // Then: Authorization, X-Riot-Entitlements-JWT, X-Riot-ClientVersion 헤더 확인

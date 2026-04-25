@@ -61,7 +61,7 @@ export function Countdown({ endsAtEpochMs, onRender, onComplete }: CountdownProp
 
     const id = setInterval(tick, TICK_INTERVAL_MS);
 
-    return () => clearInterval(id);
+    return () => { clearInterval(id); };
   }, [endsAtEpochMs, onComplete]);
 
   onRender?.();

@@ -81,8 +81,9 @@ describe.runIf(ENABLED)("[integration] user-tokens-repo round-trip", () => {
 
   beforeAll(async () => {
     loadEnv();
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const srk = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const srk = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !srk) throw new Error("Missing Supabase env vars");
     supabase = createClient(url, srk, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
@@ -94,7 +95,7 @@ describe.runIf(ENABLED)("[integration] user-tokens-repo round-trip", () => {
   });
 
   afterAll(async () => {
-    if (supabase) await cleanup();
+    await cleanup();
   });
 
   it("Test 4-1: AES ciphertext round-trip via get() decrypts to original plaintexts", async () => {
@@ -103,12 +104,12 @@ describe.runIf(ENABLED)("[integration] user-tokens-repo round-trip", () => {
       plaintexts: { access: "access-XYZ", refresh: "refresh-XYZ", ent: "ent-XYZ" },
     });
     const row = await userTokensRepo.get(userId);
-    expect(row).not.toBeNull();
-    expect(row!.access_token_enc).toBeInstanceOf(Uint8Array);
+    if (row === null) throw new Error("expected row to be non-null");
+    expect(row.access_token_enc).toBeInstanceOf(Uint8Array);
     const decrypted = await decryptTokens(
-      Buffer.from(row!.access_token_enc).toString("base64"),
-      Buffer.from(row!.refresh_token_enc).toString("base64"),
-      Buffer.from(row!.entitlements_jwt_enc).toString("base64"),
+      Buffer.from(row.access_token_enc).toString("base64"),
+      Buffer.from(row.refresh_token_enc).toString("base64"),
+      Buffer.from(row.entitlements_jwt_enc).toString("base64"),
       key
     );
     expect(decrypted.accessToken).toBe("access-XYZ");

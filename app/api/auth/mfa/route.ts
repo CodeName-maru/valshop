@@ -22,9 +22,9 @@ import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[auth.mfa] ${msg}`, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.mfa] ${msg}`, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.mfa] ${msg}`, meta),
+  info: (msg: string, meta?: Record<string, unknown>) => { realLogger.info(`[auth.mfa] ${msg}`, meta); },
+  warn: (msg: string, meta?: Record<string, unknown>) => { realLogger.warn(`[auth.mfa] ${msg}`, meta); },
+  error: (msg: string, meta?: Record<string, unknown>) => { realLogger.error(`[auth.mfa] ${msg}`, meta); },
 };
 
 /**
@@ -46,21 +46,21 @@ function extractPuuidFromIdToken(idToken: string): string | null {
  * GET 요청은 405 Method Not Allowed
  */
 export async function GET() {
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
  * PUT 요청은 405 Method Not Allowed
  */
 export async function PUT() {
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
  * DELETE 요청은 405 Method Not Allowed
  */
 export async function DELETE() {
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode === "manual-ssid") {
     return NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 410 }
     );
   }
@@ -113,13 +113,13 @@ export async function POST(req: NextRequest) {
 
     if (typeof code !== "string") {
       return NextResponse.json(
-        { code: "mfa_invalid" as AuthErrorCode },
+        { code: "mfa_invalid" },
         { status: 401 }
       );
     }
   } catch {
     return NextResponse.json(
-      { code: "mfa_invalid" as AuthErrorCode },
+      { code: "mfa_invalid" },
       { status: 401 }
     );
   }
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
   if (!pendingBlob) {
     logger.warn("auth.mfa.missing_pending");
     return NextResponse.json(
-      { code: "mfa_expired" as AuthErrorCode },
+      { code: "mfa_expired" },
       { status: 400 }
     );
   }
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
   if (!decoded) {
     logger.warn("auth.mfa.invalid_pending");
     return NextResponse.json(
-      { code: "mfa_expired" as AuthErrorCode },
+      { code: "mfa_expired" },
       { status: 400 }
     );
   }
@@ -182,7 +182,7 @@ export async function POST(req: NextRequest) {
         if (!puuid) {
           logger.error("auth.mfa.puuid_extract_failed");
           return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
+            { code: "riot_unavailable" },
             { status: 502 }
           );
         }
@@ -245,7 +245,7 @@ export async function POST(req: NextRequest) {
         logger.warn("auth.mfa.invalid_code");
         // auth_pending cookie는 유지 (재시도 가능)
         return NextResponse.json(
-          { code: "mfa_invalid" as AuthErrorCode },
+          { code: "mfa_invalid" },
           { status: 401 }
         );
       }
@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
       case "rate_limited": {
         logger.warn("auth.mfa.rate_limited");
         return NextResponse.json(
-          { code: "rate_limited" as AuthErrorCode },
+          { code: "rate_limited" },
           { status: 429 }
         );
       }
@@ -261,7 +261,7 @@ export async function POST(req: NextRequest) {
       case "upstream": {
         logger.error("auth.mfa.upstream_error");
         return NextResponse.json(
-          { code: "riot_unavailable" as AuthErrorCode },
+          { code: "riot_unavailable" },
           { status: 502 }
         );
       }
@@ -269,7 +269,7 @@ export async function POST(req: NextRequest) {
       default: {
         logger.error("auth.mfa.unknown_kind", { kind: (mfaResult as any).kind });
         return NextResponse.json(
-          { code: "unknown" as AuthErrorCode },
+          { code: "unknown" },
           { status: 500 }
         );
       }
@@ -280,7 +280,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 500 }
     );
   }

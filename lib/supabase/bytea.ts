@@ -78,7 +78,7 @@ export function parseBytea(input: unknown, columnLabel?: string): Uint8Array {
     // Copy bytes to a fresh Uint8Array using the current realm's constructor.
     // This handles Node Buffer in jsdom realm where constructor identity differs.
     const out = new Uint8Array(view.byteLength);
-    const src = new Uint8Array(view.buffer as ArrayBufferLike, view.byteOffset, view.byteLength);
+    const src = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
     out.set(src);
     return out;
   }

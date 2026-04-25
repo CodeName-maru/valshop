@@ -23,7 +23,7 @@ export function withOrigin(req: NextRequest): NextResponse | null {
   // fail-closed: 환경변수 미설정 시 모두 차단
   if (!appOrigin) {
     const response = NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 403 }
     );
     return response;
@@ -32,7 +32,7 @@ export function withOrigin(req: NextRequest): NextResponse | null {
   // Origin 헤더가 없으면 차단 (공격 의심)
   if (!origin) {
     const response = NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 403 }
     );
     return response;
@@ -41,7 +41,7 @@ export function withOrigin(req: NextRequest): NextResponse | null {
   // Origin 불일치 시 403
   if (origin !== appOrigin) {
     const response = NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 403 }
     );
     return response;

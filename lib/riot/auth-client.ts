@@ -75,11 +75,11 @@ export type ReauthResult =
  */
 function withAbortSignal(ms: number = 3000): { signal: AbortSignal; cleanup: () => void } {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), ms);
+  const timeoutId = setTimeout(() => { controller.abort(); }, ms);
 
   return {
     signal: controller.signal,
-    cleanup: () => clearTimeout(timeoutId),
+    cleanup: () => { clearTimeout(timeoutId); },
   };
 }
 

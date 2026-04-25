@@ -36,7 +36,7 @@ describe("Feature: 로그아웃 버튼 — 클라이언트 동작", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ ok: true }),
-      } as Response);
+      });
 
       render(<LogoutButton />);
 
@@ -98,7 +98,7 @@ describe("Feature: 로그아웃 버튼 — 클라이언트 동작", () => {
               resolve({
                 ok: true,
                 json: async () => ({ ok: true }),
-              } as Response);
+              });
             }, 50);
           })
       );
@@ -130,7 +130,7 @@ describe("Feature: 로그아웃 버튼 — 클라이언트 동작", () => {
               resolve({
                 ok: true,
                 json: async () => ({ ok: true }),
-              } as Response);
+              });
             }, 100);
           })
       );

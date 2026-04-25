@@ -15,7 +15,7 @@ export default function WishlistPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let alive = true;
+    let alive = true as boolean;
     (async () => {
       try {
         const wRes = await fetch("/api/wishlist");

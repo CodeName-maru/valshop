@@ -9,7 +9,7 @@ describe("Feature: 로그아웃 — 서버 토큰 파기", () => {
       // When: POST /api/auth/logout 호출
       await testApiHandler({
         appHandler: handler,
-        requestPatcher: (req) => req.headers.set("cookie", "session=ENC_PAYLOAD"),
+        requestPatcher: (req) => { req.headers.set("cookie", "session=ENC_PAYLOAD"); },
         test: async ({ fetch }) => {
           const res = await fetch({
             method: "POST",
@@ -58,7 +58,7 @@ describe("Feature: 로그아웃 — 서버 토큰 파기", () => {
       // Phase 2에서 실제 vault 어댑터가 추가될 때 검증됨
       await testApiHandler({
         appHandler: handler,
-        requestPatcher: (req) => req.headers.set("cookie", "session=ENC_PAYLOAD"),
+        requestPatcher: (req) => { req.headers.set("cookie", "session=ENC_PAYLOAD"); },
         test: async ({ fetch }) => {
           const res = await fetch({
             method: "POST",

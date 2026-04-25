@@ -66,10 +66,10 @@ function redact(value: unknown, seen = new WeakSet()): unknown {
 
   // Handle plain objects
   if (value.constructor === Object) {
-    if (seen.has(value as object)) {
+    if (seen.has(value)) {
       return "[CIRCULAR]";
     }
-    seen.add(value as object);
+    seen.add(value);
 
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
@@ -95,7 +95,7 @@ function redact(value: unknown, seen = new WeakSet()): unknown {
  */
 function getMinLevel(): LogLevel {
   const envLevel = process.env.LOG_LEVEL?.toLowerCase() as LogLevel | undefined;
-  if (envLevel && LEVEL_ORDER[envLevel] !== undefined) {
+  if (envLevel !== undefined && envLevel in LEVEL_ORDER) {
     return envLevel;
   }
 
@@ -127,7 +127,7 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
   const redactedCtx = redact(ctx) as Record<string, unknown>;
 
   try {
-    // eslint-disable-next-line no-console
+     
     console.log(
       JSON.stringify({
         level,
@@ -138,7 +138,7 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
     );
   } catch {
     // Fallback if JSON.stringify fails
-    // eslint-disable-next-line no-console
+     
     console.log(
       JSON.stringify({
         level,
@@ -154,10 +154,10 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
  * Logger interface with 4 levels
  */
 export const logger = {
-  debug: (msg: string, ctx?: Record<string, unknown>) => write("debug", msg, ctx),
-  info: (msg: string, ctx?: Record<string, unknown>) => write("info", msg, ctx),
-  warn: (msg: string, ctx?: Record<string, unknown>) => write("warn", msg, ctx),
-  error: (msg: string, ctx?: Record<string, unknown>) => write("error", msg, ctx),
+  debug: (msg: string, ctx?: Record<string, unknown>) => { write("debug", msg, ctx); },
+  info: (msg: string, ctx?: Record<string, unknown>) => { write("info", msg, ctx); },
+  warn: (msg: string, ctx?: Record<string, unknown>) => { write("warn", msg, ctx); },
+  error: (msg: string, ctx?: Record<string, unknown>) => { write("error", msg, ctx); },
 };
 
 /**

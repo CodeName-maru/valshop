@@ -69,7 +69,7 @@ export function parseStorefrontJson(json: unknown): {
     throw new Error("SingleItemStoreOffers is not an array");
   }
 
-  const remainingSeconds = (skinsPanel.SingleItemOffersRemainingDurationInSeconds as number) ?? 0;
+  const remainingSeconds = skinsPanel.SingleItemOffersRemainingDurationInSeconds as number;
 
   return {
     skinUuids: offers.map((o) => o.OfferID),
