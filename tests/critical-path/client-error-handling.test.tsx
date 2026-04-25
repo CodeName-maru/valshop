@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 describe("Feature: 401 자동 재로그인", () => {
-  it("given401FromApiStore_whenDashboardFetches_thenRedirectsToAuthStart", async () => {
+  it("given401FromApiStore_whenDashboardFetches_thenRedirectsToLogin", async () => {
     // Given: fetch가 401 응답 반환
     vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: false,
@@ -28,9 +28,9 @@ describe("Feature: 401 자동 재로그인", () => {
     const DashboardClient = (await import("@/app/(app)/dashboard/DashboardClient")).default;
     render(<DashboardClient />);
 
-    // Then: window.location.assign("/api/auth/start") 호출됨
+    // Then: window.location.assign("/login") 호출됨
     await waitFor(() => {
-      expect(global.window.location.assign).toHaveBeenCalledWith("/api/auth/start");
+      expect(global.window.location.assign).toHaveBeenCalledWith("/login");
     });
   });
 });

@@ -39,7 +39,7 @@ Notification Worker (P2) → Token Vault, Store internals, Wishlist, Email
 ```
 
 ### 핵심 모듈
-- `app/api/auth/*` — Riot 비공식 auth flow (ssid → access_token → entitlements → PUUID). 브라우저는 `auth.riotgames.com` 과 직접 통신 (PW 가 서버를 거치지 않음). `AUTH_MODE` 환경변수로 모드 분기 (ssid/login/mfa route 들).
+- `app/api/auth/*` — Riot 비공식 auth flow (ssid → access_token → entitlements → PUUID). 브라우저는 `auth.riotgames.com` 과 직접 통신 (PW 가 서버를 거치지 않음). `AUTH_MODE` 환경변수로 모드 분기. 실제 route 4개: `login`, `logout`, `mfa`, `ssid` (legacy `start`/`callback` 는 plan 0023 에서 제거됨).
 - `app/api/store/route.ts` + `lib/riot/storefront.ts` — `pd.kr.a.pvp.net/store/v2/storefront/{puuid}` 호출. `X-Riot-ClientVersion`, `X-Riot-ClientPlatform`, `X-Riot-Entitlements-JWT`, `Authorization: Bearer` 헤더 주입.
 - `lib/riot/version.ts` — `valorant-api.com/v1/version` ISR 1h 캐시. 클라이언트 버전 하드코딩 회피.
 - `lib/valorant-api/catalog.ts` — 스킨 메타 카탈로그 ISR 24h (`revalidate: 86400`). UUID → 이름/이미지/티어. ADR-0003.

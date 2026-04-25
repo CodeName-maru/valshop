@@ -47,7 +47,7 @@ function DashboardContent() {
 
         // 401 (TOKEN_EXPIRED) 는 자동 리다이렉트
         if (response.status === 401 || body.code === "TOKEN_EXPIRED") {
-          window.location.assign("/api/auth/start");
+          window.location.assign("/login");
           return;
         }
 
