@@ -421,33 +421,33 @@ Phase 4/5 는 Phase 1~3 의 공통 의존. Phase 6 은 1~3 전부 완료 후 smo
 
 | # | 항목 | 상태 | 비고 |
 |---|------|------|------|
-| 4-1 | 테스트: 6회 연속 → 429 | ⬜ 미착수 | NFR Security |
-| 4-2 | 테스트: window 리셋 | ⬜ 미착수 | |
-| 4-3 | 테스트: IP 독립 | ⬜ 미착수 | |
-| 4-impl | 구현: `lib/middleware/rate-limit.ts` | ⬜ 미착수 | |
-| 5-1 | 테스트: Origin 불일치 403 + PW 누수 smoke | ⬜ 미착수 | NFR Security 핵심 |
-| 5-2 | 테스트: Origin 없음 403 | ⬜ 미착수 | |
-| 5-impl | 구현: `lib/middleware/origin-check.ts` | ⬜ 미착수 | fail-closed |
-| 1-1 | 테스트: login 2FA-off happy + PW 누수 | ⬜ 미착수 | NFR Performance + Security |
-| 1-2 | 테스트: login 2FA-on → auth_pending | ⬜ 미착수 | 암호화 검증 |
-| 1-3 | 테스트: invalid_credentials | ⬜ 미착수 | |
-| 1-4 | 테스트: Riot 5xx → 502 | ⬜ 미착수 | NFR Availability |
-| 1-5 | 테스트: DB 장애 graceful | ⬜ 미착수 | NFR Availability |
-| 1-impl | 구현: `app/api/auth/login/route.ts` | ⬜ 미착수 | |
-| 2-1 | 테스트: MFA happy + ≤2s | ⬜ 미착수 | NFR Performance |
-| 2-2 | 테스트: auth_pending 없음 → mfa_expired | ⬜ 미착수 | |
-| 2-3 | 테스트: 위조 auth_pending → mfa_expired | ⬜ 미착수 | NFR Security |
-| 2-4 | 테스트: 잘못된 code → mfa_invalid | ⬜ 미착수 | |
-| 2-impl | 구현: `app/api/auth/mfa/route.ts` | ⬜ 미착수 | |
-| 3-1 | 테스트: logout DB 삭제 + 쿠키 clear | ⬜ 미착수 | |
-| 3-2 | 테스트: logout 멱등 | ⬜ 미착수 | |
-| 3-impl | 구현: `app/api/auth/logout/route.ts` 교체 | ⬜ 미착수 | Plan 0005 POST 경로 삭제 |
-| 6-1 | 테스트: 로그 스키마 + console.log 금지 | ⬜ 미착수 | NFR Operability |
-| 6-impl | 구현: logger.info/warn/error 삽입 | ⬜ 미착수 | plan 0024 logger import |
+| 4-1 | 테스트: 6회 연속 → 429 | ✅ 완료 | NFR Security |
+| 4-2 | 테스트: window 리셋 | ✅ 완료 | |
+| 4-3 | 테스트: IP 독립 | ✅ 완료 | |
+| 4-impl | 구현: `lib/middleware/rate-limit.ts` | ✅ 완료 | |
+| 5-1 | 테스트: Origin 불일치 403 + PW 누수 smoke | ✅ 완료 | NFR Security 핵심 |
+| 5-2 | 테스트: Origin 없음 403 | ✅ 완료 | |
+| 5-impl | 구현: `lib/middleware/origin-check.ts` | ✅ 완료 | fail-closed |
+| 1-1 | 테스트: login 2FA-off happy + PW 누수 | ✅ 완료 | NFR Performance + Security |
+| 1-2 | 테스트: login 2FA-on → auth_pending | ✅ 완료 | 암호화 검증 |
+| 1-3 | 테스트: invalid_credentials | ✅ 완료 | |
+| 1-4 | 테스트: Riot 5xx → 502 | ✅ 완료 | NFR Availability |
+| 1-5 | 테스트: DB 장애 graceful | ✅ 완료 | NFR Availability |
+| 1-impl | 구현: `app/api/auth/login/route.ts` | ✅ 완료 | |
+| 2-1 | 테스트: MFA happy + ≤2s | ✅ 완료 | NFR Performance |
+| 2-2 | 테스트: auth_pending 없음 → mfa_expired | ✅ 완료 | |
+| 2-3 | 테스트: 위조 auth_pending → mfa_expired | ✅ 완료 | NFR Security |
+| 2-4 | 테스트: 잘못된 code → mfa_invalid | ✅ 완료 | |
+| 2-impl | 구현: `app/api/auth/mfa/route.ts` | ✅ 완료 | |
+| 3-1 | 테스트: logout DB 삭제 + 쿠키 clear | ✅ 완료 | |
+| 3-2 | 테스트: logout 멱등 | ✅ 완료 | |
+| 3-impl | 구현: `app/api/auth/logout/route.ts` 교체 | ✅ 완료 | Plan 0005 POST 경로 삭제 |
+| 6-1 | 테스트: 로그 스키마 + console.log 금지 | ✅ 완료 | NFR Operability |
+| 6-impl | 구현: logger.info/warn/error 삽입 | ✅ 완료 | plan 0024 logger import |
 
 **상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
 
-**완료 요약**: 0/23 항목 완료 (0%)
+**완료 요약**: 23/23 항목 완료 (100%)
 
 ---
 
