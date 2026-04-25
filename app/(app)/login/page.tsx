@@ -278,7 +278,7 @@ function LoginPageInner() {
               <CredentialForm
                 loading={state.status === "credentialSubmitting"}
                 error={state.error}
-                onSubmit={handleCredentialSubmit}
+                onSubmit={(args) => void handleCredentialSubmit(args)}
               />
             ) : null}
 
@@ -289,7 +289,7 @@ function LoginPageInner() {
                 emailHint={state.emailHint ?? ""}
                 loading={state.status === "mfaSubmitting"}
                 error={state.error}
-                onSubmit={handleMfaSubmit}
+                onSubmit={(code) => void handleMfaSubmit(code)}
                 onBack={handleBack}
               />
             ) : null}

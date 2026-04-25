@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
+import { logger } from "@/lib/logger";
 
 /**
  * PWA 설치 배너 컴포넌트
@@ -41,10 +42,17 @@ export function InstallPrompt() {
     if (!deferredPrompt) return;
 
     const promptEvent = deferredPrompt as any;
-    promptEvent.prompt();
-
-    const { outcome } = await promptEvent.userChoice;
-    if (outcome === "accepted") {
+    try {
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+      }
+    } catch (err) {
+      logger.error("pwa.install.prompt_failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      // dismiss banner gracefully on failure
       setDeferredPrompt(null);
     }
   };
@@ -76,7 +84,7 @@ export function InstallPrompt() {
           <Button variant="ghost" onClick={handleDismiss} className="h-8 px-3 text-xs">
             나중에
           </Button>
-          <Button onClick={handleInstall} className="h-8 px-3 text-xs">
+          <Button onClick={() => void handleInstall()} className="h-8 px-3 text-xs">
             앱으로 설치
           </Button>
         </div>

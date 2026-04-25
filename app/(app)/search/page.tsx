@@ -21,7 +21,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     let alive = true;
-    (async () => {
+    void (async () => {
       try {
         const [cRes, wRes] = await Promise.all([
           fetch("/api/catalog"),

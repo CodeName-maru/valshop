@@ -23,21 +23,21 @@ const logger = {
 /**
  * GET 요청은 405 Method Not Allowed
  */
-export async function GET() {
+export function GET() {
   return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
 /**
  * POST 요청은 405 Method Not Allowed (Plan 0005의 POST 경로 삭제)
  */
-export async function POST() {
+export function POST() {
   return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
 /**
  * PUT 요청은 405 Method Not Allowed
  */
-export async function PUT() {
+export function PUT() {
   return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
