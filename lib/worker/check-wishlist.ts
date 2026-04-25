@@ -12,7 +12,7 @@ import type { WishlistRepo } from "@/lib/supabase/wishlist-repo";
 import type { NotificationsRepo } from "@/lib/supabase/notifications-repo";
 import { getKstRotationDate } from "@/lib/supabase/notifications-repo";
 import type { Catalog } from "@/lib/valorant-api/catalog";
-import type { StorefrontClient, StorefrontApiError } from "@/lib/riot/storefront-server";
+import type { StorefrontClient } from "@/lib/riot/storefront-server";
 import type { UserTokensRow } from "@/lib/supabase/types";
 import { logger } from "@/lib/logger";
 

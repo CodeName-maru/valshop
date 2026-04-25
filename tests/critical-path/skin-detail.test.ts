@@ -62,7 +62,7 @@ describe("Feature: 스킨 상세 조회 — Phase 1", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      } as Response);
+      });
 
       // When: getSkinDetail(uuid) 호출
       const result = await getSkinDetail(mockUuid);
@@ -85,7 +85,7 @@ describe("Feature: 스킨 상세 조회 — Phase 1", () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ data: null }),
-      } as Response);
+      });
 
       // When: getSkinDetail(uuid)
       await getSkinDetail(mockUuid);
@@ -108,7 +108,7 @@ describe("Feature: 스킨 상세 조회 — Phase 1", () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-      } as Response);
+      });
 
       // When: getSkinDetail("00000000-…")
       const result = await getSkinDetail("00000000-0000-0000-0000-000000000000");

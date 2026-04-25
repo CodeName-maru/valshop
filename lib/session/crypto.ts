@@ -17,6 +17,7 @@
  * - `decryptSession(ct)`: base64 → AES-GCM decrypt → JSON.parse + 필수 필드 검증
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated -- 이 파일은 SessionPayload 기반 MVP cookie 세션 암복호화 구현체. ResolvedSession 으로의 마이그레이션은 ADR-0002 Phase 2 (Supabase user_tokens) 완료 후 진행. */
 import { encrypt, decrypt, loadKey } from "@/lib/crypto/aes-gcm";
 import type { SessionPayload } from "./types";
 
@@ -118,7 +119,7 @@ export async function encryptSession(payload: SessionPayload): Promise<string> {
  * 복호화 실패/JSON 오류/필수 필드 누락 시 throw.
  */
 export async function decryptSession(ciphertext: string): Promise<SessionPayload> {
-  const key = await getSessionKey();
+  const key = await getTokenKey();
   const plaintext = await decrypt(ciphertext, key);
   let parsed: unknown;
   try {

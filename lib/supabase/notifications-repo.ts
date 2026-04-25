@@ -79,7 +79,7 @@ export function createNotificationsRepo(supabase: SupabaseClient): Notifications
         .in("skin_uuid", skinUuids);
 
       if (error) {
-        throw new Error(`Failed to filter unsent: ${error.message}`);
+        throw new Error(`Failed to filter unsent: ${String(error.message)}`);
       }
 
       const rows = data as { skin_uuid: string }[];
@@ -111,7 +111,7 @@ export function createNotificationsRepo(supabase: SupabaseClient): Notifications
         .insert(rows);
 
       if (error) {
-        throw new Error(`Failed to insert notifications: ${error.message}`);
+        throw new Error(`Failed to insert notifications: ${String(error.message)}`);
       }
     },
   };

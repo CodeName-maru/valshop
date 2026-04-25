@@ -13,7 +13,7 @@ describe("Feature: Service Worker 등록", () => {
         value: {},
         configurable: true,
       });
-      expect(() => registerServiceWorker()).not.toThrow();
+      expect(() => { registerServiceWorker(); }).not.toThrow();
     });
 
     it("Given navigator.serviceWorker 지원, When register, Then sw.js 등록 호출", () => {

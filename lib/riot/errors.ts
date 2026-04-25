@@ -216,8 +216,8 @@ export function toLogPayload(err: RiotError): Record<string, unknown> {
     }
 
     // puuid masking
-    if (extended.context.puuid) {
-      safeContext.puuid = maskPuuid(String(extended.context.puuid));
+    if (typeof extended.context.puuid === "string") {
+      safeContext.puuid = maskPuuid(extended.context.puuid);
     }
 
     return { ...base, ...safeContext };

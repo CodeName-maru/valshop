@@ -69,7 +69,7 @@ function DashboardContent() {
 
       const data = (await response.json()) as { cards?: SkinCard[] };
       setSkins(data.cards ?? []);
-    } catch (err) {
+    } catch {
       // 네트워크 에러 등
       setError({
         code: "SERVER_ERROR",
@@ -81,7 +81,7 @@ function DashboardContent() {
   };
 
   useEffect(() => {
-    fetchSkins();
+    void fetchSkins();
   }, []);
 
   if (loading) {
@@ -93,7 +93,7 @@ function DashboardContent() {
   }
 
   if (error) {
-    return <StoreErrorView code={error.code} onRetry={fetchSkins} />;
+    return <StoreErrorView code={error.code} onRetry={() => void fetchSkins()} />;
   }
 
   return (

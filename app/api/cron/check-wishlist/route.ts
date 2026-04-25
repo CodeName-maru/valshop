@@ -26,7 +26,7 @@ export const maxDuration = 60; // Vercel Hobby limit
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // 1. Verify CRON_SECRET
   const authHeader = request.headers.get("authorization");
-  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+  const expectedAuth = `Bearer ${process.env.CRON_SECRET ?? ""}`;
 
   if (!process.env.CRON_SECRET || authHeader !== expectedAuth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -75,9 +75,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             ...(params.text !== undefined ? { text: params.text } : {}),
           });
           if (error) {
-            throw new Error(`Resend send failed: ${error.name ?? "unknown"} — ${error.message ?? ""}`);
+            throw new Error(`Resend send failed: ${error.name} — ${error.message}`);
           }
-          if (!data?.id) {
+          if (!data.id) {
             throw new Error("Resend send returned no message id");
           }
           return { id: data.id };

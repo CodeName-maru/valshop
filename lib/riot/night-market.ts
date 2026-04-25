@@ -4,7 +4,7 @@
  * FR-3의 storefront 응답에서 BonusStore 노드를 파싱
  */
 
-import type { NightMarketState, NightMarket, NightMarketItem } from "../domain/night-market";
+import type { NightMarketState, NightMarketItem } from "../domain/night-market";
 
 // VP UUID (고정값)
 const VP_UUID = "85ad13f7-3d1b-508f-8c90-63da8c3c76d5";
@@ -86,8 +86,8 @@ export function parseNightMarket(storefrontJson: unknown): NightMarketState {
 /**
  * 야시장 상태 조회 (TODO: 실제 API 연동 필요)
  */
-export async function getNightMarket(): Promise<NightMarketState> {
+export function getNightMarket(): Promise<NightMarketState> {
   // TODO: 실제로는 /api/store 에서 nightMarket 필드를 가져옴
   // 현재는 임시로 비활성 상태 반환
-  return { active: false };
+  return Promise.resolve({ active: false });
 }

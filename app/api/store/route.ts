@@ -3,7 +3,6 @@
  * GET /api/store - 오늘의 상점 4개 스킨 반환
  */
 
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getTodayStore } from "@/lib/riot/storefront";
 import { getSession } from "@/lib/session/guard";
@@ -38,7 +37,7 @@ class DefaultRiotFetcher implements RiotFetcher {
       if (response.status >= 500) {
         throw new RiotApiError("RIOT_5XX", "Riot server error");
       }
-      throw new RiotApiError("INTERNAL_ERROR", `HTTP ${response.status}`);
+      throw new RiotApiError("INTERNAL_ERROR", `HTTP ${String(response.status)}`);
     }
 
     return response.json();

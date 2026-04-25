@@ -16,8 +16,8 @@ describe.skipIf(!HAS_TEST_DB)("Plan 0020 Phase 5: session store 통합", () => {
     // Cleanup before running tests
     const { createClient } = await import("@supabase/supabase-js");
     const client = createClient(
-      process.env.SUPABASE_TEST_URL!,
-      process.env.SUPABASE_TEST_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_TEST_URL ?? "",
+      process.env.SUPABASE_TEST_SERVICE_ROLE_KEY ?? ""
     );
     await client.from("user_tokens").delete().eq("puuid", testPuuid);
   });
@@ -26,8 +26,8 @@ describe.skipIf(!HAS_TEST_DB)("Plan 0020 Phase 5: session store 통합", () => {
     // Cleanup after each test
     const { createClient } = await import("@supabase/supabase-js");
     const client = createClient(
-      process.env.SUPABASE_TEST_URL!,
-      process.env.SUPABASE_TEST_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_TEST_URL ?? "",
+      process.env.SUPABASE_TEST_SERVICE_ROLE_KEY ?? ""
     );
     await client.from("user_tokens").delete().eq("puuid", testPuuid);
   });
@@ -38,8 +38,8 @@ describe.skipIf(!HAS_TEST_DB)("Plan 0020 Phase 5: session store 통합", () => {
 
     // Create test Supabase client
     const client = createClient(
-      process.env.SUPABASE_TEST_URL!,
-      process.env.SUPABASE_TEST_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_TEST_URL ?? "",
+      process.env.SUPABASE_TEST_SERVICE_ROLE_KEY ?? ""
     );
 
     // Mock user-tokens-repo to use test DB

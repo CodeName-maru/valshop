@@ -135,7 +135,7 @@ export async function withRateLimit(
 
       const response = NextResponse.json(
         {
-          code: "rate_limited" as AuthErrorCode,
+          code: "rate_limited",
           retry_after: retryAfter,
         },
         { status: 429 }

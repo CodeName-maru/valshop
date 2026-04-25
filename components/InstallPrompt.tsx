@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
+import { logger } from "@/lib/logger";
 
 /**
  * BeforeInstallPromptEvent는 표준이 아니지만 Chromium 계열에서 제공하는 PWA 설치 트리거.
@@ -43,7 +44,7 @@ export function InstallPrompt() {
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return () => { window.removeEventListener("beforeinstallprompt", handler); };
   }, []);
 
   if (!deferredPrompt || (dismissedUntil && dismissedUntil > Date.now())) {
@@ -54,10 +55,17 @@ export function InstallPrompt() {
     if (!deferredPrompt) return;
 
     const promptEvent = deferredPrompt as BeforeInstallPromptEvent;
-    await promptEvent.prompt();
-
-    const { outcome } = await promptEvent.userChoice;
-    if (outcome === "accepted") {
+    try {
+      await promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+      }
+    } catch (err) {
+      logger.error("pwa.install.prompt_failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      // dismiss banner gracefully on failure
       setDeferredPrompt(null);
     }
   };
@@ -89,7 +97,7 @@ export function InstallPrompt() {
           <Button variant="ghost" onClick={handleDismiss} className="h-8 px-3 text-xs">
             나중에
           </Button>
-          <Button onClick={handleInstall} className="h-8 px-3 text-xs">
+          <Button onClick={() => void handleInstall()} className="h-8 px-3 text-xs">
             앱으로 설치
           </Button>
         </div>

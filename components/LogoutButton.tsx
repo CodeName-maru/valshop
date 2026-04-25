@@ -26,7 +26,7 @@ function clearLocalTokens(): void {
       keysToRemove.push(key);
     }
   }
-  keysToRemove.forEach((key) => localStorage.removeItem(key));
+  keysToRemove.forEach((key) => { localStorage.removeItem(key); });
 
   // 참고: HttpOnly 쿠키는 클라이언트에서 직접 삭제할 수 없습니다.
   // document.cookie로는 HttpOnly 아닌 쿠키만 삭제 가능하며,
@@ -69,7 +69,7 @@ export function LogoutButton() {
   return (
     <Button
       variant="ghost"
-      onClick={handleLogout}
+      onClick={() => void handleLogout()}
       disabled={isPending}
       aria-label="로그아웃"
     >

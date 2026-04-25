@@ -14,7 +14,7 @@ export async function getClientVersion(): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch client version: ${response.status}`);
+    throw new Error(`Failed to fetch client version: ${String(response.status)}`);
   }
 
   const json = (await response.json()) as { data: { riotClientVersion: string } };

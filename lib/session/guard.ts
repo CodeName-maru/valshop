@@ -6,6 +6,7 @@
  * - 성공 → SessionPayload 반환
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated -- 이 파일은 SessionPayload 기반 MVP cookie 세션 가드. ResolvedSession 으로의 마이그레이션은 ADR-0002 Phase 2 (Supabase user_tokens) 완료 후 진행. */
 import { cookies } from "next/headers";
 import type { SessionPayload } from "./types";
 import { decryptSession, isSessionExpired } from "./crypto";

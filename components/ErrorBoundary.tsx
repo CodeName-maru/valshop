@@ -6,7 +6,6 @@
  */
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { toLogPayload } from "@/lib/riot/errors";
 import { logger } from "@/lib/logger";
 
 interface Props {

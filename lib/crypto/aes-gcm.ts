@@ -55,10 +55,10 @@ export async function decrypt(
     const combined = Buffer.from(ciphertextBase64, "base64");
 
     // Extract IV (first 12 bytes)
-    const iv = combined.slice(0, 12);
+    const iv = combined.subarray(0, 12);
 
     // Extract ciphertext
-    const ciphertext = combined.slice(12);
+    const ciphertext = combined.subarray(12);
 
     // Decrypt
     const plaintext = await crypto.subtle.decrypt(
@@ -89,7 +89,7 @@ export async function loadKey(keyBase64: string): Promise<CryptoKey> {
   const keyData = Buffer.from(keyBase64, "base64");
 
   if (keyData.length !== 32) {
-    throw new Error(`Invalid key length: expected 32 bytes, got ${keyData.length}`);
+    throw new Error(`Invalid key length: expected 32 bytes, got ${String(keyData.length)}`);
   }
 
   return await crypto.subtle.importKey(
@@ -160,5 +160,8 @@ export async function decryptTokens(
     (r) => (r as PromiseFulfilledResult<string>).value
   );
 
-  return { accessToken: accessToken!, refreshToken: refreshToken!, entitlementsJwt: entitlementsJwt! };
+  if (accessToken === undefined || refreshToken === undefined || entitlementsJwt === undefined) {
+    throw new Error("Decryption produced undefined token");
+  }
+  return { accessToken, refreshToken, entitlementsJwt };
 }

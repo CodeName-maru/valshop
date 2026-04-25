@@ -81,7 +81,7 @@ describe("Feature: 스킨 상세 뷰 컴포넌트 — Phase 2", () => {
       // Given: 렌더 완료된 상세 페이지
       render(<SkinDetailView skin={mockSkinDetail} />);
 
-      const mainImage = screen.getByTestId("main-skin-image") as HTMLImageElement;
+      const mainImage = screen.getByTestId("main-skin-image");
       // Initial image contains chroma-1 URL
       expect(mainImage.src).toContain("chroma-1");
 

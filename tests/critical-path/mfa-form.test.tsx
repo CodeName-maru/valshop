@@ -84,7 +84,7 @@ describe("MfaForm", () => {
       />
     );
 
-    const input = screen.getByLabelText(/인증 코드/i) as HTMLInputElement;
+    const input = screen.getByLabelText(/인증 코드/i);
     await user.type(input, "abc123def");
 
     // 숫자만 남아야 함
@@ -103,7 +103,7 @@ describe("MfaForm", () => {
       />
     );
 
-    const input = screen.getByLabelText(/인증 코드/i) as HTMLInputElement;
+    const input = screen.getByLabelText(/인증 코드/i);
     await user.type(input, "123456789");
 
     expect(input.value).toBe("123456");
