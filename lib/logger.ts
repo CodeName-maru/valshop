@@ -82,9 +82,12 @@ function redact(value: unknown, seen = new WeakSet()): unknown {
     return result;
   }
 
-  // For other object types, use JSON serialization
+  // For other object types (Error, class instances), use JSON serialization
+  // with a replacer that recursively redacts sensitive keys to avoid
+  // leaking secrets stored as own properties (e.g. error.upstreamRaw.access_token,
+  // class instance fields).
   try {
-    return JSON.stringify(value);
+    return JSON.stringify(value, (key, val) => (isSensitiveKey(key) ? "[REDACTED]" : val));
   } catch {
     return "[UNSTRINGIFIABLE]";
   }
