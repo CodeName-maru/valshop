@@ -38,7 +38,7 @@ export function ChromaSelector({
             key={chroma.uuid}
             variant={selectedIndex === index ? "default" : "outline"}
             aria-pressed={selectedIndex === index}
-            onClick={() => onSelect(index)}
+            onClick={() => { onSelect(index); }}
             className="text-sm"
           >
             {chroma.displayName}

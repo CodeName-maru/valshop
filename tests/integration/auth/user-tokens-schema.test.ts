@@ -17,6 +17,11 @@ describe("UserTokens Schema Migration — Plan 0018 FR-R1", () => {
     ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
     : null;
 
+  function requireDb() {
+    if (!supabase) throw new Error("supabase not configured");
+    return supabase;
+  }
+
   beforeAll(() => {
     if (!supabase) {
       console.warn("Supabase env not configured, skipping integration tests");
@@ -25,7 +30,7 @@ describe("UserTokens Schema Migration — Plan 0018 FR-R1", () => {
 
   // Test 3-1: 신규 컬럼 존재
   it.skipIf(!supabase)("givenMigrationApplied_whenIntrospect_thenUserTokensHasSessionColumns", async () => {
-    const { data, error } = await supabase!.rpc("get_table_columns", { table_name: "user_tokens" });
+    const { data, error } = await requireDb().rpc("get_table_columns", { table_name: "user_tokens" });
 
     expect(error).toBeNull();
 
@@ -51,7 +56,7 @@ describe("UserTokens Schema Migration — Plan 0018 FR-R1", () => {
 
   // Test 3-2: rate_limit_buckets 테이블 생성
   it.skipIf(!supabase)("givenMigrationApplied_whenIntrospect_thenRateLimitBucketsExists", async () => {
-    const { data, error } = await supabase!.rpc("get_table_columns", { table_name: "rate_limit_buckets" });
+    const { data, error } = await requireDb().rpc("get_table_columns", { table_name: "rate_limit_buckets" });
 
     expect(error).toBeNull();
 
@@ -73,7 +78,7 @@ describe("UserTokens Schema Migration — Plan 0018 FR-R1", () => {
 
   // Test 3-3: user_tokens_session_id_idx 인덱스 존재
   it.skipIf(!supabase)("givenMigrationApplied_whenInspectIndexes_thenSessionIdIdxExists", async () => {
-    const { data, error } = await supabase!
+    const { data, error } = await requireDb()
       .from("pg_indexes")
       .select("*")
       .eq("tablename", "user_tokens")
@@ -85,7 +90,7 @@ describe("UserTokens Schema Migration — Plan 0018 FR-R1", () => {
 
   // Test 3-4: RLS enable
   it.skipIf(!supabase)("givenMigrationApplied_whenInspectRls_thenUserTokensAndRateLimitBucketsEnabled", async () => {
-    const { data: userData, error: userError } = await supabase!
+    const { data: userData, error: userError } = await requireDb()
       .from("pg_tables")
       .select("rowsecurity")
       .eq("tablename", "user_tokens")
@@ -94,7 +99,7 @@ describe("UserTokens Schema Migration — Plan 0018 FR-R1", () => {
     expect(userError).toBeNull();
     expect((userData as any)?.rowsecurity).toBe(true);
 
-    const { data: bucketData, error: bucketError } = await supabase!
+    const { data: bucketData, error: bucketError } = await requireDb()
       .from("pg_tables")
       .select("rowsecurity")
       .eq("tablename", "rate_limit_buckets")
@@ -106,7 +111,7 @@ describe("UserTokens Schema Migration — Plan 0018 FR-R1", () => {
 
   // Test 3-5: 컬럼 화이트리스트 (PIPA)
   it.skipIf(!supabase)("givenMigrationApplied_whenListUserTokensColumns_thenNoUnexpectedPII", async () => {
-    const { data, error } = await supabase!.rpc("get_table_columns", { table_name: "user_tokens" });
+    const { data, error } = await requireDb().rpc("get_table_columns", { table_name: "user_tokens" });
 
     expect(error).toBeNull();
 

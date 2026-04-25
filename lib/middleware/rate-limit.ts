@@ -123,7 +123,7 @@ export async function withRateLimit(
     }
 
     // 윈도우 내: count 증가
-    const newCount = (existing.count as number) + 1;
+    const newCount = (existing.count) + 1;
 
     if (newCount > opts.limit) {
       // 초과: 429 반환
@@ -134,7 +134,7 @@ export async function withRateLimit(
 
       const response = NextResponse.json(
         {
-          code: "rate_limited" as AuthErrorCode,
+          code: "rate_limited",
           retry_after: retryAfter,
         },
         { status: 429 }

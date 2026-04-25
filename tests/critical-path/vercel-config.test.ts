@@ -8,7 +8,7 @@ describe("Feature: Vercel 배포 구성", () => {
       // Given: repo 에 커밋된 vercel.json (ADR-0009: Hobby 일 1회 cron)
       // When: 파싱
       // Then: cron 은 Phase 2 에서 check-wishlist 엔드포인트로 등록
-      const crons = vercelConfig.crons ?? [];
+      const crons = vercelConfig.crons;
       expect(crons.length).toBeGreaterThanOrEqual(1);
       expect(crons[0].path).toBe("/api/cron/check-wishlist");
     });

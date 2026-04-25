@@ -35,7 +35,7 @@ function mockFetch() {
       return new Response(null, { status: deleteStatus });
     }
     return new Response("not found", { status: 404 });
-  }) as any;
+  });
 }
 
 beforeEach(() => {
@@ -58,18 +58,18 @@ describe("Test 5-4: 위시리스트 페이지", () => {
     wishlistIds = ["s1", "s2", "s3"];
     render(<WishlistPage />);
     await waitFor(() =>
-      expect(screen.getAllByTestId("skin-card").length).toBe(3)
+      { expect(screen.getAllByTestId("skin-card").length).toBe(3); }
     );
   });
 
   it("givenItemCard_whenClickRemove_thenCardDisappearsAndDELETECalled", async () => {
     wishlistIds = ["s1", "s2"];
     render(<WishlistPage />);
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(2));
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(2); });
     await act(async () => {
       fireEvent.click(screen.getByTestId("wishlist-remove-s1"));
     });
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(1));
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(1); });
     expect(global.fetch).toHaveBeenCalledWith(
       "/api/wishlist/s1",
       expect.objectContaining({ method: "DELETE" })
@@ -79,13 +79,13 @@ describe("Test 5-4: 위시리스트 페이지", () => {
   it("givenEmptyWishlist_whenMount_thenEmptyStateWithSearchLinkShown", async () => {
     wishlistIds = [];
     render(<WishlistPage />);
-    await waitFor(() => expect(screen.getByTestId("wishlist-empty")).toBeInTheDocument());
+    await waitFor(() => { expect(screen.getByTestId("wishlist-empty")).toBeInTheDocument(); });
     expect(screen.getByText(/검색에서 스킨을 찜해보세요/)).toBeInTheDocument();
   });
 
   it("givenAPIReturns401_whenMount_thenRedirectsToLogin", async () => {
     wishlistStatus = 401;
     render(<WishlistPage />);
-    await waitFor(() => expect(assignSpy).toHaveBeenCalledWith("/login"));
+    await waitFor(() => { expect(assignSpy).toHaveBeenCalledWith("/login"); });
   });
 });

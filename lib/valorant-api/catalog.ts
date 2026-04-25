@@ -149,8 +149,9 @@ export class ValorantApiCatalog implements Catalog {
 
   async lookup(uuid: string): Promise<MatchedSkin | null> {
     // Check cache first
-    if (this.cache.has(uuid)) {
-      return this.cache.get(uuid)!;
+    const cached = this.cache.get(uuid);
+    if (cached !== undefined) {
+      return cached;
     }
 
     try {

@@ -73,8 +73,8 @@ describe("Feature: Dashboard SSR 통합", () => {
   describe("Scenario: Dashboard SSR — 4 카드 HTML 포함", () => {
     it("given_validSession_whenRenderDashboardServerComponent_thenHtmlContainsFourSkinCardDataTestid", async () => {
       // Given: getSession mock → valid, getTodayStore mock → 4 offers
-      vi.mocked(requireSession).mockResolvedValue(mockSession as any);
-      vi.mocked(getTodayStore).mockResolvedValue(mockStore as any);
+      vi.mocked(requireSession).mockResolvedValue(mockSession);
+      vi.mocked(getTodayStore).mockResolvedValue(mockStore);
 
       // When: await DashboardPage() 렌더 후 HTML 직렬화
       const html = renderToString(await DashboardPage());
@@ -86,8 +86,8 @@ describe("Feature: Dashboard SSR 통합", () => {
 
     it("given_validSession_whenRenderDashboard_thenContainsAllSkinNames", async () => {
       // Given: mocks 설정
-      vi.mocked(requireSession).mockResolvedValue(mockSession as any);
-      vi.mocked(getTodayStore).mockResolvedValue(mockStore as any);
+      vi.mocked(requireSession).mockResolvedValue(mockSession);
+      vi.mocked(getTodayStore).mockResolvedValue(mockStore);
 
       // When: render
       const html = renderToString(await DashboardPage());
@@ -117,7 +117,7 @@ describe("Feature: Dashboard SSR 통합", () => {
   describe("Scenario: Dashboard storefront 에러 → 에러 카드 + 재시도 버튼", () => {
     it("given_storefrontThrowsRiotUpstreamError_whenRenderDashboard_thenShowsErrorStateWithRetryButton", async () => {
       // Given: requireSession은 성공, getTodayStore는 RiotUpstreamError throw
-      vi.mocked(requireSession).mockResolvedValue(mockSession as any);
+      vi.mocked(requireSession).mockResolvedValue(mockSession);
       vi.mocked(getTodayStore).mockRejectedValue(
         new RiotApiError("RIOT_5XX", "Riot server error")
       );
@@ -131,7 +131,7 @@ describe("Feature: Dashboard SSR 통합", () => {
 
     it("given_storefrontThrowsRateLimitedError_whenRenderDashboard_thenShowsErrorState", async () => {
       // Given: getTodayStore가 RIOT_RATE_LIMITED 에러 throw
-      vi.mocked(requireSession).mockResolvedValue(mockSession as any);
+      vi.mocked(requireSession).mockResolvedValue(mockSession);
       vi.mocked(getTodayStore).mockRejectedValue(
         new RiotApiError("RIOT_RATE_LIMITED", "Rate limited")
       );
@@ -147,7 +147,7 @@ describe("Feature: Dashboard SSR 통합", () => {
   describe("Scenario: 토큰 만료 → /login 리다이렉트", () => {
     it("given_tokenExpiredError_whenRenderDashboard_thenRedirectsToLogin", async () => {
       // Given: getTodayStore가 TOKEN_EXPIRED 에러 throw
-      vi.mocked(requireSession).mockResolvedValue(mockSession as any);
+      vi.mocked(requireSession).mockResolvedValue(mockSession);
       vi.mocked(getTodayStore).mockRejectedValue(
         new RiotApiError("TOKEN_EXPIRED", "Token expired")
       );

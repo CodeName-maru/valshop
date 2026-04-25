@@ -18,9 +18,9 @@ import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[auth.ssid] ${msg}`, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.ssid] ${msg}`, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.ssid] ${msg}`, meta),
+  info: (msg: string, meta?: Record<string, unknown>) => { realLogger.info(`[auth.ssid] ${msg}`, meta); },
+  warn: (msg: string, meta?: Record<string, unknown>) => { realLogger.warn(`[auth.ssid] ${msg}`, meta); },
+  error: (msg: string, meta?: Record<string, unknown>) => { realLogger.error(`[auth.ssid] ${msg}`, meta); },
 };
 
 /**
@@ -30,9 +30,9 @@ export function GET() {
   // AUTH_MODE 확인 (모든 메서드에 적용)
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
-    return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });
+    return NextResponse.json({ code: "unknown" }, { status: 404 });
   }
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
@@ -41,9 +41,9 @@ export function GET() {
 export function PUT() {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
-    return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });
+    return NextResponse.json({ code: "unknown" }, { status: 404 });
   }
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
@@ -52,9 +52,9 @@ export function PUT() {
 export function DELETE() {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
-    return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });
+    return NextResponse.json({ code: "unknown" }, { status: 404 });
   }
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
     return NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 404 }
     );
   }
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
     if (typeof ssid !== "string") {
       return NextResponse.json(
-        { code: "session_expired" as AuthErrorCode },
+        { code: "session_expired" },
         { status: 401 }
       );
     }
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
     }
   } catch {
     return NextResponse.json(
-      { code: "session_expired" as AuthErrorCode },
+      { code: "session_expired" },
       { status: 401 }
     );
   }
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
         if (parts.length !== 3) {
           logger.error("auth.ssid.invalid_jwt");
           return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
+            { code: "riot_unavailable" },
             { status: 502 }
           );
         }
@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
         if (!payloadPart) {
           logger.error("auth.ssid.invalid_jwt_payload");
           return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
+            { code: "riot_unavailable" },
             { status: 502 }
           );
         }
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
         if (!puuid) {
           logger.error("auth.ssid.puuid_missing");
           return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
+            { code: "riot_unavailable" },
             { status: 502 }
           );
         }
@@ -222,7 +222,7 @@ export async function POST(req: NextRequest) {
       case "expired": {
         logger.warn("auth.ssid.expired");
         return NextResponse.json(
-          { code: "session_expired" as AuthErrorCode },
+          { code: "session_expired" },
           { status: 401 }
         );
       }
@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
       case "upstream": {
         logger.error("auth.ssid.upstream_error");
         return NextResponse.json(
-          { code: "riot_unavailable" as AuthErrorCode },
+          { code: "riot_unavailable" },
           { status: 502 }
         );
       }
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
       default: {
         logger.error("auth.ssid.unknown_kind", { kind: (reauthResult as any).kind });
         return NextResponse.json(
-          { code: "unknown" as AuthErrorCode },
+          { code: "unknown" },
           { status: 500 }
         );
       }
@@ -249,7 +249,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 500 }
     );
   }

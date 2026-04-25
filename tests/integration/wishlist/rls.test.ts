@@ -32,7 +32,7 @@ d("Feature: wishlist RLS 격리 (integration)", () => {
   let userB: { id: string; email: string; client: SupabaseClient };
 
   beforeAll(async () => {
-    admin = createClient(URL!, SERVICE_KEY!, {
+    admin = createClient(URL ?? "", SERVICE_KEY ?? "", {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
@@ -47,11 +47,11 @@ d("Feature: wishlist RLS 격리 (integration)", () => {
     if (created[0].error) throw new Error(`createUser A: ${created[0].error.message}`);
     if (created[1].error) throw new Error(`createUser B: ${created[1].error.message}`);
 
-    const idA = created[0].data.user!.id;
-    const idB = created[1].data.user!.id;
+    const idA = created[0].data.user.id;
+    const idB = created[1].data.user.id;
 
-    const clientA = createClient(URL!, ANON_KEY!, { auth: { persistSession: false } });
-    const clientB = createClient(URL!, ANON_KEY!, { auth: { persistSession: false } });
+    const clientA = createClient(URL ?? "", ANON_KEY ?? "", { auth: { persistSession: false } });
+    const clientB = createClient(URL ?? "", ANON_KEY ?? "", { auth: { persistSession: false } });
     const signed = await Promise.all([
       clientA.auth.signInWithPassword({ email: emailA, password: TEST_PASSWORD }),
       clientB.auth.signInWithPassword({ email: emailB, password: TEST_PASSWORD }),
@@ -64,6 +64,7 @@ d("Feature: wishlist RLS 격리 (integration)", () => {
   }, 30_000);
 
   afterAll(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- beforeAll may throw before assigning; guard cleanup so afterAll itself doesn't crash
     if (!userA || !userB) return;
     await admin.from("wishlist").delete().in("user_id", [userA.id, userB.id]);
     await Promise.allSettled([
@@ -89,8 +90,8 @@ d("Feature: wishlist RLS 격리 (integration)", () => {
       .from("wishlist")
       .insert({ user_id: userA.id, skin_uuid: SKIN_B });
 
-    expect(error).not.toBeNull();
-    expect(error!.code === "42501" || /row-level security/i.test(error!.message)).toBe(true);
+    if (error === null) throw new Error("expected error to be non-null");
+    expect(error.code === "42501" || /row-level security/i.test(error.message)).toBe(true);
 
     const check = await admin
       .from("wishlist")
@@ -101,7 +102,7 @@ d("Feature: wishlist RLS 격리 (integration)", () => {
   });
 
   it("givenAnonClient_whenSelect_thenZeroRows", async () => {
-    const anon = createClient(URL!, ANON_KEY!, { auth: { persistSession: false } });
+    const anon = createClient(URL ?? "", ANON_KEY ?? "", { auth: { persistSession: false } });
     const { data, error } = await anon.from("wishlist").select("skin_uuid");
     expect(error).toBeNull();
     expect(data ?? []).toEqual([]);

@@ -34,7 +34,7 @@ export class RiotCookieJar {
    */
   async storeFromResponse(url: string, res: Response): Promise<void> {
     const cookies = res.headers.getSetCookie();
-    if (!cookies || cookies.length === 0) {
+    if (cookies.length === 0) {
       return;
     }
 

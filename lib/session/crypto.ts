@@ -119,7 +119,7 @@ export async function encryptSession(payload: SessionPayload): Promise<string> {
  * 복호화 실패/JSON 오류/필수 필드 누락 시 throw.
  */
 export async function decryptSession(ciphertext: string): Promise<SessionPayload> {
-  const key = await getSessionKey();
+  const key = await getTokenKey();
   const plaintext = await decrypt(ciphertext, key);
   let parsed: unknown;
   try {

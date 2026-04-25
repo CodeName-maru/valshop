@@ -33,7 +33,7 @@ describe("Feature: 메타 카탈로그 ISR 캐시", () => {
           ],
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getSkinCatalog()
       await getSkinCatalog();
@@ -71,7 +71,7 @@ describe("Feature: 메타 카탈로그 ISR 캐시", () => {
           ],
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getSkinCatalog()
       const result = await getSkinCatalog();
@@ -112,7 +112,7 @@ describe("Feature: 메타 카탈로그 ISR 캐시", () => {
           ],
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getTierCatalog()
       const result = await getTierCatalog();
@@ -149,7 +149,7 @@ describe("Feature: Client Version Resolver", () => {
           },
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getClientVersion()
       const version = await getClientVersion();

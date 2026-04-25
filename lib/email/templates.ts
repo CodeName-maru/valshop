@@ -21,7 +21,10 @@ export function buildWishlistMatchEmail(matches: MatchedSkin[]): {
   }
 
   // Build subject line
-  const firstMatch = matches[0]!;
+  const firstMatch = matches[0];
+  if (firstMatch === undefined) {
+    throw new Error("Cannot build email with zero matches");
+  }
   let subject: string;
   if (matches.length === 1) {
     subject = `🎯 "${firstMatch.name}"이 상점에 있어요!`;
