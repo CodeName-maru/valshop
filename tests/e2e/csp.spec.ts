@@ -33,7 +33,8 @@ test.describe("CSP E2E (Test 2-2)", () => {
 
     // Wait for page to be fully loaded
     await page.waitForLoadState("networkidle");
-    await page.waitForSelector("a[href='/api/auth/start']");
+    // Login page now uses a 2-step FSM with a credential form (legacy redirect link removed).
+    await page.waitForSelector("form input[name='username']");
 
     // Check that no CSP-related console errors occurred
     const cspRelatedErrors = consoleErrors.filter((error) =>
