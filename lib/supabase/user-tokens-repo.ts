@@ -5,6 +5,10 @@
  * Plan 0014: PostgREST serializes bytea columns as `\x<hex>` strings on read
  * and accepts the same literal on write. We normalize at this adapter boundary
  * so that domain code (worker / cron / etc.) only ever sees `Uint8Array`.
+ *
+ * TODO (future plan): Supabase generated types 를 도입하여 `Record<string, unknown>`
+ * 기반 normalize 대신 `Database["public"]["Tables"]["user_tokens"]["Row"]` 를
+ * 직접 사용하도록 마이그레이션. 현재 PR 범위 밖 (별도 plan 으로 분리 예정).
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
