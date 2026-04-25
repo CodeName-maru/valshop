@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEventHandler } from "react";
 
 interface MfaFormProps {
   emailHint: string;
@@ -25,7 +25,7 @@ export default function MfaForm({
 }: MfaFormProps) {
   const [code, setCode] = useState("");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     if (!code.trim() || code.length !== 6) return;
     onSubmit(code.trim());
@@ -69,7 +69,7 @@ export default function MfaForm({
           maxLength={6}
           disabled={loading}
           value={code}
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={(e) => { handleChange(e.target.value); }}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-center text-lg tracking-widest disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="000000"
           required

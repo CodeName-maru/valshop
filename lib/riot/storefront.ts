@@ -4,6 +4,7 @@
  * Phase 3: Store Proxy 호출
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated -- getTodayStore 는 MVP cookie 세션(SessionPayload)을 입력으로 받음. ResolvedSession 으로의 전환은 ADR-0002 Phase 2 에서 함께 진행 (accessExpiresAt 필드 차이). */
 import type { StorefrontOffer, TodayStore } from "@/lib/domain/skin";
 import type { SessionPayload } from "@/lib/session/types";
 import type { RiotFetcher } from "./fetcher";
@@ -66,7 +67,7 @@ export function parseStorefront(
 
   // 로테이션 종료 시간 계산
   const remainingSeconds =
-    skinsPanel.SingleItemOffersRemainingDurationInSeconds ?? 0;
+    skinsPanel.SingleItemOffersRemainingDurationInSeconds;
   const rotationEndsAt = new Date(now.getTime() + remainingSeconds * 1000);
 
   // 오퍼 파싱

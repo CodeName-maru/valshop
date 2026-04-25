@@ -8,6 +8,7 @@
  * 로 직접 본인성 검증이 가능하므로 본 helper 와 Service Role 의존을 제거.
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated -- resolveUserIdFromSession 는 MVP cookie 세션(SessionPayload)을 입력으로 받음. ResolvedSession 으로의 전환은 ADR-0002 Phase 2 에서 Auth user 통합 시 본 helper 자체를 제거 예정. */
 import type { SessionPayload } from "@/lib/session/types";
 
 interface CacheEntry {
