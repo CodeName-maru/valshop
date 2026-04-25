@@ -22,7 +22,7 @@ import { encodePendingJar } from "@/lib/session/pending-jar";
 import { withOrigin } from "@/lib/middleware/origin-check";
 import { withRateLimit } from "@/lib/middleware/rate-limit";
 import type { AuthErrorCode } from "@/lib/riot/errors";
-import { decodeJwt } from "@/lib/session/crypto";
+import { extractPuuidFromIdToken } from "@/lib/session/crypto";
 import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
@@ -31,21 +31,6 @@ const logger = {
   warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.login] ${msg}`, meta),
   error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.login] ${msg}`, meta),
 };
-
-/**
- * PUUID를 JWT에서 추출 (plan 0019 Amendment A-3)
- */
-function extractPuuidFromIdToken(idToken: string): string | null {
-  try {
-    const payload = decodeJwt(idToken);
-    if (payload && typeof payload === "object" && "sub" in payload) {
-      return payload.sub as string;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * GET 요청은 405 Method Not Allowed

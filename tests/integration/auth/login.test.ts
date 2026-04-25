@@ -3,51 +3,131 @@
  *
  * spec § 4-5: FR-R4
  * NFR: Performance (p95 ≤ 3s), Security (PW 누수 방지), Operability (구조화 로그)
+ *
+ * Plan 0021 follow-up (PR #20 fix B2/B3):
+ * - placeholder asserts → 실제 POST() 호출 + 응답 검증
+ * - SessionStore + logger 는 vi.mock 으로 주입
+ * - PW 누수 smoke: logger / response body 어디에도 sentinel 미포함 확인
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { POST } from "@/app/api/auth/login/route";
-import { NextRequest } from "next/server";
 import { http, HttpResponse } from "msw";
 import { mswServer } from "../../../vitest.setup";
 
-// Mock logger
+// ----- Mocks ---------------------------------------------------------------
+
+// SessionStore: DB 의존 회피 — in-memory fake
+const createSessionMock = vi.fn(async () => ({
+  sessionId: "00000000-1111-2222-3333-444444444444",
+  maxAge: 1209600,
+}));
+const destroySessionMock = vi.fn(async () => {});
+const resolveSessionMock = vi.fn(async () => null);
+
+vi.mock("@/lib/session/store", () => ({
+  getSessionStore: () => ({
+    createSession: createSessionMock,
+    destroy: destroySessionMock,
+    resolve: resolveSessionMock,
+  }),
+}));
+
+// Rate limit: 통과 (개별 테스트에서 override 가능)
+const withRateLimitMock = vi.fn(async () => null);
+vi.mock("@/lib/middleware/rate-limit", () => ({
+  withRateLimit: (...args: unknown[]) => withRateLimitMock(...args),
+  extractIp: () => "1.2.3.4",
+}));
+
+// JWT decode: idToken="mock-id-token" → {sub: "test-puuid"}
 vi.mock("@/lib/session/crypto", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/session/crypto")>();
+  const actual =
+    await importOriginal<typeof import("@/lib/session/crypto")>();
   return {
     ...actual,
-    decodeJwt: (jwt: string) => {
-      // Return mock PUUID from JWT
-      if (jwt.includes("mock-id-token")) {
-        return { sub: "test-puuid-12345" };
+    extractPuuidFromIdToken: (idToken: string) => {
+      if (idToken && idToken.includes("mock-id-token")) {
+        return "test-puuid-12345";
       }
-      return actual.decodeJwt(jwt);
+      return actual.extractPuuidFromIdToken(idToken);
     },
   };
 });
 
+// Logger spy
+const loggerInfo = vi.fn();
+const loggerWarn = vi.fn();
+const loggerError = vi.fn();
+vi.mock("@/lib/logger", () => ({
+  logger: {
+    debug: vi.fn(),
+    info: (...a: unknown[]) => loggerInfo(...a),
+    warn: (...a: unknown[]) => loggerWarn(...a),
+    error: (...a: unknown[]) => loggerError(...a),
+  },
+}));
+
+// Import AFTER mocks
+import { POST } from "@/app/api/auth/login/route";
+import { NextRequest } from "next/server";
+
+const APP_ORIGIN = "https://valshop.vercel.app";
+const SENTINEL_PASSWORD = "SECRET_PW_SMOKE_xyz123";
+
+function makeReq(body: unknown, opts: { origin?: string | null } = {}): NextRequest {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "x-forwarded-for": "1.2.3.4",
+  };
+  const origin = opts.origin === undefined ? APP_ORIGIN : opts.origin;
+  if (origin) headers["Origin"] = origin;
+
+  return new NextRequest("https://valshop.vercel.app/api/auth/login", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+}
+
+function assertNoPasswordLeak(password: string): void {
+  for (const fn of [loggerInfo, loggerWarn, loggerError]) {
+    for (const call of fn.mock.calls) {
+      const serialized = JSON.stringify(call);
+      expect(serialized).not.toContain(password);
+    }
+  }
+}
+
 describe("POST /api/auth/login", () => {
-  const APP_ORIGIN = "https://valshop.vercel.app";
-
   beforeEach(() => {
-    // Reset mocks
     vi.clearAllMocks();
-
-    // Set environment variables
     process.env.APP_ORIGIN = APP_ORIGIN;
     process.env.TOKEN_ENC_KEY = Buffer.alloc(32, "a").toString("base64");
     process.env.PENDING_ENC_KEY = Buffer.alloc(32, "b").toString("base64");
+    process.env.AUTH_MODE = "credentials";
+
+    // default: rate limit pass, session create OK
+    withRateLimitMock.mockResolvedValue(null);
+    createSessionMock.mockResolvedValue({
+      sessionId: "00000000-1111-2222-3333-444444444444",
+      maxAge: 1209600,
+    });
   });
 
   afterEach(() => {
     delete process.env.APP_ORIGIN;
+    delete process.env.AUTH_MODE;
   });
 
-  describe("2FA-off happy path", () => {
-    it("given유효자격증명_when로그인POST_thenDB행과session쿠키발급_PW누수없음", async () => {
-      // Given: MSW handlers for successful auth flow
+  // ------- happy path -----------------------------------------------------
+  describe("Scenario: 2FA-off happy path", () => {
+    it("Given 유효 자격증명, When POST, Then 200 + session cookie + PW 누수 없음", async () => {
       mswServer.use(
         http.post("https://auth.riotgames.com/api/v1/authorization", () => {
+          // preflight (initAuthFlow)
+          return HttpResponse.json({}, { status: 200 });
+        }),
+        http.put("https://auth.riotgames.com/api/v1/authorization", () => {
           return HttpResponse.json({
             type: "response",
             response: {
@@ -61,154 +141,141 @@ describe("POST /api/auth/login", () => {
           return HttpResponse.json({
             entitlements_token: "mock-entitlements-jwt",
           });
-        })
+        }),
       );
 
-      // When: POST /api/auth/login
-      const request = new NextRequest("https://valshop.vercel.app/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Origin": APP_ORIGIN,
-          "x-forwarded-for": "1.2.3.4",
-        },
-        body: JSON.stringify({
-          username: "testuser",
-          password: "SECRET_PW_XYZ",
-        }),
-      });
+      const req = makeReq({ username: "tester", password: SENTINEL_PASSWORD });
+      const res = await POST(req);
 
-      // Note: We can't directly call POST() because it uses getSessionStore which needs DB
-      // For now, we'll test that the route structure is correct
-      expect(true).toBe(true); // Placeholder for full integration test with DB
+      expect(res.status).toBe(200);
+      const setCookie = res.headers.get("set-cookie") || "";
+      expect(setCookie).toContain("session=");
+      expect(createSessionMock).toHaveBeenCalledOnce();
+
+      const bodyText = await res.text();
+      expect(bodyText).not.toContain(SENTINEL_PASSWORD);
+
+      // PW smoke (B3)
+      assertNoPasswordLeak(SENTINEL_PASSWORD);
     });
   });
 
-  describe("2FA-on → auth_pending cookie", () => {
-    it("given2FA응답_when로그인POST_thenauth_pending암호화쿠키와email_hint반환", async () => {
-      // Given: MSW returns MFA required
+  // ------- MFA required ---------------------------------------------------
+  describe("Scenario: 2FA-on → auth_pending cookie", () => {
+    it("Given MFA required 응답, When POST, Then 200 mfa_required + auth_pending cookie", async () => {
       mswServer.use(
-        http.post("https://auth.riotgames.com/api/v1/authorization", () => {
+        http.post("https://auth.riotgames.com/api/v1/authorization", () =>
+          HttpResponse.json({}, { status: 200 }),
+        ),
+        http.put("https://auth.riotgames.com/api/v1/authorization", () => {
           return HttpResponse.json({
             type: "multifactor",
-            multifactor: {
-              email: "j***@example.com",
-            },
+            multifactor: { email: "j***@example.com" },
           });
-        })
+        }),
       );
 
-      const request = new NextRequest("https://valshop.vercel.app/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Origin": APP_ORIGIN,
-        },
-        body: JSON.stringify({
-          username: "testuser",
-          password: "password",
-        }),
-      });
+      const req = makeReq({ username: "tester", password: SENTINEL_PASSWORD });
+      const res = await POST(req);
 
-      // Placeholder for full integration test
-      expect(true).toBe(true);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as { status: string; email_hint: string };
+      expect(body.status).toBe("mfa_required");
+      expect(body.email_hint).toBe("j***@example.com");
+
+      const setCookie = res.headers.get("set-cookie") || "";
+      expect(setCookie).toContain("auth_pending=");
+
+      // session 은 만들어지지 않아야 함
+      expect(createSessionMock).not.toHaveBeenCalled();
+      assertNoPasswordLeak(SENTINEL_PASSWORD);
     });
   });
 
-  describe("Error cases", () => {
-    it("given잘못된자격증명_when로그인POST_then401invalid_credentials", async () => {
-      // Given: MSW returns invalid credentials
+  // ------- Error cases ----------------------------------------------------
+  describe("Scenario: invalid credentials", () => {
+    it("Given Riot auth_failure, When POST, Then 401 invalid_credentials", async () => {
       mswServer.use(
-        http.post("https://auth.riotgames.com/api/v1/authorization", () => {
+        http.post("https://auth.riotgames.com/api/v1/authorization", () =>
+          HttpResponse.json({}, { status: 200 }),
+        ),
+        http.put("https://auth.riotgames.com/api/v1/authorization", () => {
           return HttpResponse.json({
             type: "response",
             error: "auth_failure",
           });
-        })
+        }),
       );
 
-      const request = new NextRequest("https://valshop.vercel.app/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Origin": APP_ORIGIN,
-        },
-        body: JSON.stringify({
-          username: "testuser",
-          password: "wrongpassword",
-        }),
-      });
+      const req = makeReq({ username: "tester", password: "wrongpw" });
+      const res = await POST(req);
 
-      // Placeholder
-      expect(true).toBe(true);
+      expect(res.status).toBe(401);
+      const body = (await res.json()) as { code: string };
+      expect(body.code).toBe("invalid_credentials");
     });
+  });
 
-    it("givenRiot5xx_when로그인POST_then502riot_unavailable", async () => {
-      // Given: MSW returns 500
+  describe("Scenario: rate_limited from Riot", () => {
+    it("Given Riot 429, When POST, Then 429 rate_limited", async () => {
       mswServer.use(
-        http.post("https://auth.riotgames.com/api/v1/authorization", () => {
-          return HttpResponse.json({}, { status: 500 });
-        })
+        http.post("https://auth.riotgames.com/api/v1/authorization", () =>
+          HttpResponse.json({}, { status: 200 }),
+        ),
+        http.put("https://auth.riotgames.com/api/v1/authorization", () => {
+          return HttpResponse.json({}, { status: 429 });
+        }),
       );
 
-      const request = new NextRequest("https://valshop.vercel.app/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Origin": APP_ORIGIN,
-        },
-        body: JSON.stringify({
-          username: "testuser",
-          password: "password",
-        }),
-      });
+      const req = makeReq({ username: "tester", password: "pw" });
+      const res = await POST(req);
 
-      // Placeholder
-      expect(true).toBe(true);
+      expect(res.status).toBe(429);
+      const body = (await res.json()) as { code: string };
+      expect(body.code).toBe("rate_limited");
     });
   });
 
-  describe("Origin validation", () => {
-    it("given다른Origin_when로그인POST_then403unknown", async () => {
-      const request = new NextRequest("https://valshop.vercel.app/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Origin": "https://evil.com",
-        },
-        body: JSON.stringify({
-          username: "testuser",
-          password: "SECRET_PW_SMOKE",
+  describe("Scenario: upstream 5xx", () => {
+    it("Given Riot 500, When POST, Then 502 riot_unavailable", async () => {
+      mswServer.use(
+        http.post("https://auth.riotgames.com/api/v1/authorization", () =>
+          HttpResponse.json({}, { status: 200 }),
+        ),
+        http.put("https://auth.riotgames.com/api/v1/authorization", () => {
+          return HttpResponse.json({}, { status: 500 });
         }),
-      });
+      );
 
-      // Placeholder
-      expect(true).toBe(true);
-    });
+      const req = makeReq({ username: "tester", password: "pw" });
+      const res = await POST(req);
 
-    it("givenOrigin헤더없음_when로그인POST_then403unknown", async () => {
-      const request = new NextRequest("https://valshop.vercel.app/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // No Origin header
-        },
-        body: JSON.stringify({
-          username: "testuser",
-          password: "password",
-        }),
-      });
-
-      // Placeholder
-      expect(true).toBe(true);
+      expect(res.status).toBe(502);
+      const body = (await res.json()) as { code: string };
+      expect(body.code).toBe("riot_unavailable");
     });
   });
 
-  describe("Method guards", () => {
-    it("givenGET요청_when로그인_then405", async () => {
-      // We can't test GET/PUT/DELETE directly with NextRequest
-      // These are tested by the route exports
-      expect(true).toBe(true);
+  // ------- Origin validation ----------------------------------------------
+  describe("Scenario: Origin guard", () => {
+    it("Given evil origin, When POST, Then 403 unknown", async () => {
+      const req = makeReq(
+        { username: "tester", password: SENTINEL_PASSWORD },
+        { origin: "https://evil.com" },
+      );
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      assertNoPasswordLeak(SENTINEL_PASSWORD);
+    });
+
+    it("Given missing Origin header, When POST, Then 403 unknown", async () => {
+      const req = makeReq(
+        { username: "tester", password: SENTINEL_PASSWORD },
+        { origin: null },
+      );
+      const res = await POST(req);
+      expect(res.status).toBe(403);
+      assertNoPasswordLeak(SENTINEL_PASSWORD);
     });
   });
 });

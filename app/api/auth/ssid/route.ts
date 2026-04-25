@@ -14,6 +14,7 @@ import { getSessionStore } from "@/lib/session/store";
 import { withOrigin } from "@/lib/middleware/origin-check";
 import { withRateLimit } from "@/lib/middleware/rate-limit";
 import type { AuthErrorCode } from "@/lib/riot/errors";
+import { extractPuuidFromIdToken } from "@/lib/session/crypto";
 import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
@@ -144,32 +145,7 @@ export async function POST(req: NextRequest) {
 
         // 6. Session store에 저장 (PUUID는 JWT에서 추출 필요하지만
         // reauthWithSsid는 PUUID를 반환하지 않으므로, idToken에서 추출)
-        const idToken = reauthResult.idToken;
-
-        // 간단히 JWT 파싱 (서명 검증 없이 - 이미 TLS 채널)
-        const parts = idToken.split(".");
-        if (parts.length !== 3) {
-          logger.error("auth.ssid.invalid_jwt");
-          return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
-            { status: 502 }
-          );
-        }
-
-        const payloadPart = parts[1];
-        if (!payloadPart) {
-          logger.error("auth.ssid.invalid_jwt_payload");
-          return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
-            { status: 502 }
-          );
-        }
-
-        const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
-        const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
-        const decoded = atob(padded);
-        const payload = JSON.parse(decoded);
-        const puuid = payload.sub as string;
+        const puuid = extractPuuidFromIdToken(reauthResult.idToken);
 
         if (!puuid) {
           logger.error("auth.ssid.puuid_missing");
