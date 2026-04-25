@@ -201,13 +201,18 @@ export async function submitCredentials(
     }
 
     // Body 파싱
-    const body = await response.json();
+    const body = (await response.json()) as {
+      type?: string;
+      error?: string;
+      multifactor?: { email?: string };
+      response?: { parameters?: { uri?: string } };
+    };
 
     // MFA 필요 (Amendment A-4)
     if (body.type === "multifactor") {
       return {
         kind: "mfa",
-        emailHint: body.multifactor?.email || "",
+        emailHint: body.multifactor?.email ?? "",
       };
     }
 
@@ -292,7 +297,11 @@ export async function submitMfa(
     }
 
     // Body 파싱
-    const body = await response.json();
+    const body = (await response.json()) as {
+      type?: string;
+      error?: string;
+      response?: { parameters?: { uri?: string } };
+    };
 
     // MFA 실패
     if (
@@ -397,7 +406,7 @@ export async function reauthWithSsid(
     // 200 OK 응답 → body 파싱
     if (response.status === 200) {
       try {
-        const body = await response.json();
+        const body = (await response.json()) as { type?: string; error?: string };
 
         // 재로그인 필요
         if (body.type === "auth" || body.error === "auth_failure") {
@@ -447,8 +456,8 @@ export async function exchangeEntitlements(
       throw new Error(`Entitlements request failed: ${String(response.status)}`);
     }
 
-    const data = await response.json();
-    return data.entitlements_token as string;
+    const data = (await response.json()) as { entitlements_token: string };
+    return data.entitlements_token;
   } finally {
     cleanup();
   }

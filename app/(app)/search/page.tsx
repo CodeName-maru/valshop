@@ -35,11 +35,13 @@ export default function SearchPage() {
           setError("카탈로그를 불러오지 못했습니다");
           return;
         }
-        const cBody = await cRes.json();
-        const wBody = wRes.ok ? await wRes.json() : { skins: [] };
+        const cBody = (await cRes.json()) as { skins?: Skin[] };
+        const wBody = wRes.ok
+          ? ((await wRes.json()) as { skins?: string[] })
+          : { skins: [] };
         if (!alive) return;
-        setCatalog(cBody.skins || []);
-        setWishlist(new Set<string>(wBody.skins || []));
+        setCatalog(cBody.skins ?? []);
+        setWishlist(new Set<string>(wBody.skins ?? []));
       } catch {
         if (alive) setError("네트워크 오류");
       } finally {

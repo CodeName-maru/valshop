@@ -3,6 +3,11 @@
  * Port interface + Supabase adapter for tracking sent notifications
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { MatchedSkin } from "@/lib/domain/wishlist";
+
+// Re-export for downstream consumers (legacy)
+export type { MatchedSkin };
 
 /**
  * Port interface for notifications repository
@@ -52,7 +57,7 @@ export function getKstRotationDate(date: Date = new Date()): Date {
  * @param supabase - Supabase client (service role)
  * @returns NotificationsRepo instance
  */
-export function createNotificationsRepo(supabase: any): NotificationsRepo {
+export function createNotificationsRepo(supabase: SupabaseClient): NotificationsRepo {
   return {
     async filterUnsent(
       userId: string,
@@ -77,7 +82,8 @@ export function createNotificationsRepo(supabase: any): NotificationsRepo {
         throw new Error(`Failed to filter unsent: ${String(error.message)}`);
       }
 
-      const alreadyNotified = new Set((data || []).map((row: any) => row.skin_uuid));
+      const rows = data as { skin_uuid: string }[];
+      const alreadyNotified = new Set(rows.map((row) => row.skin_uuid));
 
       // Return skins that haven't been notified yet
       return skinUuids.filter((uuid) => !alreadyNotified.has(uuid));

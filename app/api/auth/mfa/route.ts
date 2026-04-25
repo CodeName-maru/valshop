@@ -108,15 +108,14 @@ export async function POST(req: NextRequest) {
   let code: string;
 
   try {
-    const body = await req.json();
-    code = body.code;
-
-    if (typeof code !== "string") {
+    const body = (await req.json()) as { code?: unknown };
+    if (typeof body.code !== "string") {
       return NextResponse.json(
         { code: "mfa_invalid" as AuthErrorCode },
         { status: 401 }
       );
     }
+    code = body.code;
   } catch {
     return NextResponse.json(
       { code: "mfa_invalid" as AuthErrorCode },
@@ -152,7 +151,9 @@ export async function POST(req: NextRequest) {
 
   // 6. jar 복원
   const jar = new RiotCookieJar();
-  const jarObj = { cookies: [] as any[] };
+  const jarObj: {
+    cookies: { key: string; value: string; domain?: string; path?: string }[];
+  } = { cookies: [] };
 
   for (const cookie of decoded.jar) {
     jarObj.cookies.push({
@@ -196,16 +197,9 @@ export async function POST(req: NextRequest) {
         // Session store에 저장
         const store = getSessionStore();
 
-        // jar에서 ssid/tdid 추출
-        const jarJson = jar.serialize();
-        const parsedJar = JSON.parse(jarJson);
-        const cookies = parsedJar.cookies || [];
-
-        const ssidCookie = cookies.find((c: any) => c.key === "ssid");
-        const tdidCookie = cookies.find((c: any) => c.key === "tdid");
-
-        const ssid = ssidCookie?.value || "";
-        const tdid = tdidCookie?.value || undefined;
+        // jar에서 ssid/tdid 추출 (typed helper)
+        const ssid = jar.getCookieValue("ssid") ?? "";
+        const tdid = jar.getCookieValue("tdid");
 
         const { sessionId, maxAge } = await store.createSession(puuid, {
           accessToken: mfaResult.accessToken,
@@ -267,7 +261,7 @@ export async function POST(req: NextRequest) {
       }
 
       default: {
-        logger.error("auth.mfa.unknown_kind", { kind: (mfaResult as any).kind });
+        logger.error("auth.mfa.unknown_kind", { kind: (mfaResult as { kind: string }).kind });
         return NextResponse.json(
           { code: "unknown" as AuthErrorCode },
           { status: 500 }

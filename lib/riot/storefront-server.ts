@@ -107,7 +107,7 @@ export function createStorefrontClient(fetcher: typeof fetch = fetch): Storefron
         );
       }
 
-      const json = await response.json();
+      const json: unknown = await response.json();
       return parseStorefrontJson(json);
     },
   };

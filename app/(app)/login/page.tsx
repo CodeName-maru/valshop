@@ -187,7 +187,12 @@ function LoginPageInner() {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as {
+        ok?: boolean;
+        status?: string;
+        email_hint?: string;
+        code?: string;
+      };
 
       if (data.ok) {
         dispatch({ type: "CREDENTIAL_OK" });
@@ -196,12 +201,12 @@ function LoginPageInner() {
       }
 
       if (data.status === "mfa_required") {
-        dispatch({ type: "CREDENTIAL_MFA", emailHint: data.email_hint });
+        dispatch({ type: "CREDENTIAL_MFA", emailHint: data.email_hint ?? "" });
         return;
       }
 
       if (data.code) {
-        dispatch({ type: "CREDENTIAL_ERROR", code: data.code });
+        dispatch({ type: "CREDENTIAL_ERROR", code: data.code as AuthErrorCode });
         return;
       }
 
@@ -231,7 +236,7 @@ function LoginPageInner() {
         body: JSON.stringify({ code }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as { ok?: boolean; code?: string };
 
       if (data.ok) {
         dispatch({ type: "MFA_OK" });
@@ -244,7 +249,7 @@ function LoginPageInner() {
       }
 
       if (data.code) {
-        dispatch({ type: "MFA_ERROR", code: data.code });
+        dispatch({ type: "MFA_ERROR", code: data.code as AuthErrorCode });
         return;
       }
 

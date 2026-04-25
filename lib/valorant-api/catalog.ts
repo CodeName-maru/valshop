@@ -21,13 +21,15 @@ export async function getSkinCatalog(): Promise<Map<string, SkinMeta>> {
     throw new Error(`Failed to fetch skin catalog: ${String(response.status)}`);
   }
 
-  const json = await response.json();
-  const data = json.data as Array<{
-    uuid: string;
-    displayName: string;
-    displayIcon: string | null;
-    contentTierUuid: string | null;
-  }>;
+  const json = (await response.json()) as {
+    data: Array<{
+      uuid: string;
+      displayName: string;
+      displayIcon: string | null;
+      contentTierUuid: string | null;
+    }>;
+  };
+  const data = json.data;
 
   const catalog = new Map<string, SkinMeta>();
   for (const skin of data) {
@@ -54,12 +56,14 @@ export async function getTierCatalog(): Promise<Map<string, TierMeta>> {
     throw new Error(`Failed to fetch tier catalog: ${String(response.status)}`);
   }
 
-  const json = await response.json();
-  const data = json.data as Array<{
-    uuid: string;
-    displayName: string;
-    displayIcon: string | null;
-  }>;
+  const json = (await response.json()) as {
+    data: Array<{
+      uuid: string;
+      displayName: string;
+      displayIcon: string | null;
+    }>;
+  };
+  const data = json.data;
 
   const catalog = new Map<string, TierMeta>();
   for (const tier of data) {
@@ -93,7 +97,28 @@ export async function getSkinDetail(uuid: string): Promise<SkinDetail | null> {
       return null;
     }
 
-    const data = await response.json();
+    interface RawChroma {
+      uuid: string;
+      displayName: string | null;
+      fullRender: string | null;
+      swatch: string | null;
+    }
+    interface RawLevel {
+      uuid: string;
+      displayName: string | null;
+      displayIcon: string | null;
+      streamedVideo: string | null;
+    }
+    interface RawSkinDetail {
+      uuid: string;
+      displayName: string | null;
+      displayIcon: string | null;
+      chromas?: RawChroma[];
+      levels?: RawLevel[];
+      streamedVideo: string | null;
+      contentTierUuid: string | null;
+    }
+    const data = (await response.json()) as { data?: RawSkinDetail } | null;
 
     if (!data || !data.data) {
       return null;
@@ -104,13 +129,13 @@ export async function getSkinDetail(uuid: string): Promise<SkinDetail | null> {
       uuid: skin.uuid,
       displayName: skin.displayName || "Unknown Skin",
       displayIcon: skin.displayIcon || null,
-      chromas: (skin.chromas || []).map((chroma: any) => ({
+      chromas: (skin.chromas ?? []).map((chroma) => ({
         uuid: chroma.uuid,
         displayName: chroma.displayName || "Chroma",
         fullRender: chroma.fullRender || "",
         swatch: chroma.swatch || null,
       })),
-      levels: (skin.levels || []).map((level: any) => ({
+      levels: (skin.levels ?? []).map((level) => ({
         uuid: level.uuid,
         displayName: level.displayName || "Level",
         displayIcon: level.displayIcon || null,
@@ -163,7 +188,7 @@ export class ValorantApiCatalog implements Catalog {
         return null;
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as unknown;
       const skin = this.parseSkin(data);
 
       if (skin) {
@@ -193,12 +218,19 @@ export class ValorantApiCatalog implements Catalog {
     return result;
   }
 
-  private parseSkin(data: any): MatchedSkin | null {
-    if (!data || !data.data) {
+  private parseSkin(data: unknown): MatchedSkin | null {
+    if (!data || typeof data !== "object" || !("data" in data)) {
       return null;
     }
-
-    const skin = data.data;
+    const inner = data.data;
+    if (!inner || typeof inner !== "object") {
+      return null;
+    }
+    const skin = inner as {
+      uuid: string;
+      displayName?: string;
+      displayIcon?: string;
+    };
     return {
       uuid: skin.uuid,
       name: skin.displayName || "Unknown Skin",

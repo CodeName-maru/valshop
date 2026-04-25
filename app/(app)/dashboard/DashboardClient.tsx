@@ -43,7 +43,14 @@ function DashboardContent() {
       const response = await fetch("/api/store");
 
       if (!response.ok) {
-        const body = await response.json();
+        // 비-2xx 응답은 JSON 이 아닐 수 있다 (HTML 5xx, empty body 등).
+        // parse 실패 시 generic upstream error 로 처리한다.
+        let body: { code?: string; message?: string } = {};
+        try {
+          body = (await response.json()) as { code?: string; message?: string };
+        } catch {
+          body = {};
+        }
 
         // 401 (TOKEN_EXPIRED) 는 자동 리다이렉트
         if (response.status === 401 || body.code === "TOKEN_EXPIRED") {
@@ -51,13 +58,17 @@ function DashboardContent() {
           return;
         }
 
-        // 그 외 에러는 상태에 저장
-        setError(body as ErrorResponse);
+        // 그 외 에러는 상태에 저장 (parse 실패 / 알 수 없는 code 는 SERVER_ERROR fallback)
+        const code = (body.code as RiotErrorCode | undefined) ?? "SERVER_ERROR";
+        const message =
+          body.message ??
+          "서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        setError({ code, message });
         return;
       }
 
-      const data = await response.json();
-      setSkins(data.cards || []);
+      const data = (await response.json()) as { cards?: SkinCard[] };
+      setSkins(data.cards ?? []);
     } catch {
       // 네트워크 에러 등
       setError({

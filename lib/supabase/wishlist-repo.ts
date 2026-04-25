@@ -5,6 +5,7 @@
  * Worker (Plan 0008) 는 listFor 만 사용해도 호환된다.
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   WISHLIST_LIMIT,
   WishlistLimitExceededError,
@@ -18,7 +19,7 @@ export type WishlistRepo = DomainWishlistRepo;
  * Supabase 어댑터 생성.
  * Service Role 클라이언트를 권장 (Route Handler 가 명시적 user_id 필터로 격리 책임).
  */
-export function createWishlistRepo(supabase: any): WishlistRepo {
+export function createWishlistRepo(supabase: SupabaseClient): WishlistRepo {
   return {
     async add(userId: string, skinUuid: string): Promise<void> {
       // 1000 한도 사전 체크 (도메인 멱등성 — 이미 존재시 add 는 no-op 이어야 함)
@@ -39,7 +40,7 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
       if (exErr) {
         throw new Error(`Failed to check wishlist: ${String(exErr.message)}`);
       }
-      if (existing && existing.length > 0) {
+      if (existing.length > 0) {
         return; // 이미 있으면 멱등 no-op
       }
       if ((count ?? 0) >= WISHLIST_LIMIT) {
@@ -76,7 +77,8 @@ export function createWishlistRepo(supabase: any): WishlistRepo {
         throw new Error(`Failed to list wishlist: ${String(error.message)}`);
       }
 
-      return (data || []).map((row: any) => row.skin_uuid);
+      const rows = data as { skin_uuid: string }[];
+      return rows.map((row) => row.skin_uuid);
     },
 
     async countFor(userId: string): Promise<number> {

@@ -37,6 +37,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "RESEND_API_KEY not configured" }, { status: 500 });
   }
 
+  if (!process.env.RESEND_FROM_EMAIL) {
+    return NextResponse.json({ error: "RESEND_FROM_EMAIL not configured" }, { status: 500 });
+  }
+
   // 3. Check if Supabase is configured
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return NextResponse.json({ error: "Supabase not configured" }, { status: 500 });
@@ -54,13 +58,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // 5. Create Resend client
     const { Resend } = await import("resend");
     const resendClient = new Resend(process.env.RESEND_API_KEY);
+    const fromEmail = process.env.RESEND_FROM_EMAIL;
 
     // 6. Create Resend adapter — v6 SDK 는 { data, error } 를 반환한다.
     //    error 를 무시하거나 top-level .id 를 믿으면 발송 실패가 worker 에서 silent 성공으로 둔갑한다.
+    //    Worker (lib/email/dispatch.ts) 는 from 필드를 모르므로 이 어댑터에서 주입한다.
     const resend = {
       emails: {
         send: async (params: { to: string | string[]; subject: string; html: string; text?: string }): Promise<{ id: string }> => {
-          const { data, error } = await resendClient.emails.send(params as any);
+          // exactOptionalPropertyTypes: text 가 undefined 일 수 있으므로 spread 로 조건부 주입.
+          const { data, error } = await resendClient.emails.send({
+            from: fromEmail,
+            to: params.to,
+            subject: params.subject,
+            html: params.html,
+            ...(params.text !== undefined ? { text: params.text } : {}),
+          });
           if (error) {
             throw new Error(`Resend send failed: ${error.name} — ${error.message}`);
           }
