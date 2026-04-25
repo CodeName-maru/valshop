@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEventHandler } from "react";
 
 interface CredentialFormProps {
   loading: boolean;
@@ -22,7 +22,7 @@ export default function CredentialForm({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit: SubmitEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     if (!username.trim() || !password.trim()) return;
     onSubmit({ username: username.trim(), password });
@@ -53,7 +53,7 @@ export default function CredentialForm({
           spellCheck={false}
           disabled={loading}
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => { setUsername(e.target.value); }}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="예: Player#KR1"
           required
@@ -71,7 +71,7 @@ export default function CredentialForm({
           autoComplete="current-password"
           disabled={loading}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); }}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           required
         />
