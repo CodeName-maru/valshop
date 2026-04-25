@@ -64,6 +64,8 @@ d("Feature: wishlist RLS 격리 (integration)", () => {
   }, 30_000);
 
   afterAll(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- beforeAll may throw before assigning; guard cleanup so afterAll itself doesn't crash
+    if (!userA || !userB) return;
     await admin.from("wishlist").delete().in("user_id", [userA.id, userB.id]);
     await Promise.allSettled([
       admin.auth.admin.deleteUser(userA.id),
