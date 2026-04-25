@@ -1,14 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getSkinDetail } from "@/lib/valorant-api/catalog";
 import type { SkinDetail, Chroma, SkinLevel } from "@/lib/domain/skin";
 
 // Mock fetch
+// MSW listen() in vitest.setup.ts patches globalThis.fetch in beforeAll,
+// so we must (re)stub fetch in beforeEach to win against MSW interceptor.
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
 
 describe("Feature: 스킨 상세 조회 — Phase 1", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("Test 1-1: 카탈로그에서 단건 스킨 상세를 가져온다", () => {
