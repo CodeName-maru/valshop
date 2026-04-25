@@ -17,7 +17,7 @@ import { decodePendingJar } from "@/lib/session/pending-jar";
 import { withOrigin } from "@/lib/middleware/origin-check";
 import { withRateLimit } from "@/lib/middleware/rate-limit";
 import type { AuthErrorCode } from "@/lib/riot/errors";
-import { decodeJwt } from "@/lib/session/crypto";
+import { extractPuuidFromIdToken } from "@/lib/session/crypto";
 import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
@@ -26,21 +26,6 @@ const logger = {
   warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.mfa] ${msg}`, meta),
   error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.mfa] ${msg}`, meta),
 };
-
-/**
- * PUUID를 JWT에서 추출 (plan 0019 Amendment A-3)
- */
-function extractPuuidFromIdToken(idToken: string): string | null {
-  try {
-    const payload = decodeJwt(idToken);
-    if (payload && typeof payload === "object" && "sub" in payload) {
-      return payload.sub as string;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * GET 요청은 405 Method Not Allowed
@@ -150,23 +135,8 @@ export async function POST(req: NextRequest) {
     username: decoded.username.slice(0, 3) + "***",
   });
 
-  // 6. jar 복원
-  const jar = new RiotCookieJar();
-  const jarObj = { cookies: [] as any[] };
-
-  for (const cookie of decoded.jar) {
-    jarObj.cookies.push({
-      key: cookie.name,
-      value: cookie.value,
-      domain: cookie.domain,
-      path: cookie.path,
-    });
-  }
-
-  // RiotCookieJar는 fromJSON을 제공하지 않으므로 수동 설정
-  // (pending-jar에서 저장한 형식과 맞추어 복원)
-  // 실제로는 tough-cookie의 CookieJar를 내부적으로 사용
-  // 간단히 새 jar를 만들고 submitMfa 내부에서 jar를 사용하도록
+  // 6. jar 복원 (Plan 0021 fix B1: PendingCookie[] → tough-cookie 로 실제로 채움)
+  const jar = await RiotCookieJar.fromPendingCookies(decoded.jar);
 
   try {
     // 7. MFA 코드 제출

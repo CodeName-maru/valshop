@@ -202,3 +202,23 @@ export function decodeJwt(jwt: string): Record<string, unknown> | null {
     return null;
   }
 }
+
+/**
+ * Plan 0021: idToken (Riot OIDC JWT) 의 `sub` claim 에서 PUUID 추출.
+ * login/mfa/ssid 라우트에서 공통으로 사용한다.
+ *
+ * @param idToken - Riot 발급 JWT
+ * @returns PUUID 문자열 또는 null (파싱 실패/sub 없음)
+ */
+export function extractPuuidFromIdToken(idToken: string): string | null {
+  try {
+    const payload = decodeJwt(idToken);
+    if (payload && typeof payload === "object" && "sub" in payload) {
+      const sub = payload.sub;
+      return typeof sub === "string" ? sub : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

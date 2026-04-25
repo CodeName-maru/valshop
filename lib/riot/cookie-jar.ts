@@ -12,6 +12,19 @@
 import { CookieJar as ToughCookieJar, Cookie } from "tough-cookie";
 
 /**
+ * PendingCookie shape — matches `lib/session/pending-jar.ts` PendingCookie.
+ * Kept as a structural type to avoid an upward dependency on the session layer.
+ */
+export type PendingCookieShape = {
+  name: string;
+  value: string;
+  domain?: string;
+  path?: string;
+};
+
+const RIOT_AUTH_URL = "https://auth.riotgames.com";
+
+/**
  * RiotCookieJar - tough-cookie의 래퍼
  *
  * 공개 메서드:
@@ -83,5 +96,34 @@ export class RiotCookieJar {
       // 파싱 실패 시 빈 jar 반환
       return new RiotCookieJar();
     }
+  }
+
+  /**
+   * Plan 0021 fix: PendingCookie[] 형식 (auth_pending 쿠키 payload) 으로부터
+   * jar 를 복원한다. tough-cookie 의 toJSON 직렬화 형식과 다른 단순한 형식이라
+   * 별도 메서드로 분리.
+   *
+   * 도메인이 누락된 경우 `auth.riotgames.com` 으로 가정한다.
+   */
+  static async fromPendingCookies(
+    cookies: PendingCookieShape[],
+  ): Promise<RiotCookieJar> {
+    const wrapper = new RiotCookieJar();
+    for (const c of cookies) {
+      const domain = c.domain || "auth.riotgames.com";
+      const url = `https://${domain.replace(/^\./, "")}${c.path || "/"}`;
+      const tough = new Cookie({
+        key: c.name,
+        value: c.value,
+        domain: domain.replace(/^\./, ""),
+        path: c.path || "/",
+      });
+      try {
+        await wrapper.jar.setCookie(tough, url);
+      } catch {
+        // 개별 쿠키 set 실패는 무시 (best-effort 복원)
+      }
+    }
+    return wrapper;
   }
 }
