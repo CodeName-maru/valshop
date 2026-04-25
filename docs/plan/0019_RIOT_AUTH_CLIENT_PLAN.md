@@ -408,36 +408,36 @@ Phase 3 ─┬─ 3-1 ~ 3-7 tests ─────→ 3-impl-normalize (lib/riot/
 
 | # | 항목 | 상태 | 비고 |
 |---|------|------|------|
-| 1-1 | CookieJar Set-Cookie 저장 테스트 | ⬜ 미착수 | |
-| 1-2 | 도메인 스코프 필터 테스트 | ⬜ 미착수 | |
-| 1-3 | 만료 쿠키 제외 테스트 | ⬜ 미착수 | |
-| 1-4 | serialize/deserialize 왕복 테스트 | ⬜ 미착수 | plan 0020 소비 계약 |
-| 1-impl | `lib/riot/cookie-jar.ts` + tough-cookie 의존 추가 | ⬜ 미착수 | |
-| 2-1 | initAuthFlow authorize GET 테스트 | ⬜ 미착수 | |
-| 2-2 | submitCredentials happy 테스트 | ⬜ 미착수 | |
-| 2-3 | submitCredentials MFA 분기 테스트 | ⬜ 미착수 | |
-| 2-4 | submitCredentials invalid 테스트 | ⬜ 미착수 | |
-| 2-5 | submitCredentials timeout 테스트 | ⬜ 미착수 | |
-| 2-6 | submitCredentials 429 테스트 | ⬜ 미착수 | |
-| 2-7 | submitCredentials 5xx 테스트 | ⬜ 미착수 | |
-| 2-8 | submitMfa happy 테스트 | ⬜ 미착수 | |
-| 2-9 | submitMfa invalid 테스트 | ⬜ 미착수 | |
-| 2-10 | reauthWithSsid happy 테스트 | ⬜ 미착수 | plan 0020 소비 |
-| 2-11 | reauthWithSsid expired 테스트 | ⬜ 미착수 | |
-| 2-12 | reauthWithSsid 5xx 테스트 | ⬜ 미착수 | |
-| 2-13 | fetchPuuid 테스트 | ⬜ 미착수 | 이관 |
-| 2-14 | exchangeEntitlements 테스트 | ⬜ 미착수 | 이관 |
-| 2-15 | 공통 AbortSignal 3s 주입 테스트 | ⬜ 미착수 | table-driven |
-| 2-impl-auth-client | `lib/riot/auth-client.ts` 구현 | ⬜ 미착수 | |
-| 2-impl-auth-shrink | `lib/riot/auth.ts` 축소 (buildRiotAuthorizeUrl 삭제, PUUID/entitlements 제거) | ⬜ 미착수 | FR-R6 선반영 |
-| 3-1 | normalizeRiotError invalid_credentials 매핑 | ⬜ 미착수 | |
-| 3-2 | normalizeRiotError rate_limited 매핑 | ⬜ 미착수 | |
-| 3-3 | normalizeRiotError mfa_invalid 매핑 | ⬜ 미착수 | |
-| 3-4 | normalizeRiotError riot_unavailable 매핑 | ⬜ 미착수 | |
-| 3-5 | raw body 민감 필드 redact 테스트 | ⬜ 미착수 | |
-| 3-6 | Set-Cookie redact 테스트 | ⬜ 미착수 | |
-| 3-7 | phase 힌트 분기 테스트 | ⬜ 미착수 | session_expired vs invalid_credentials |
-| 3-impl-normalize | `lib/riot/errors.ts` normalizeRiotError + AuthErrorCode export | ⬜ 미착수 | |
+| 1-1 | CookieJar Set-Cookie 저장 테스트 | ✅ 완료 | |
+| 1-2 | 도메인 스코프 필터 테스트 | ✅ 완료 | |
+| 1-3 | 만료 쿠키 제외 테스트 | ✅ 완료 | |
+| 1-4 | serialize/deserialize 왕복 테스트 | ✅ 완료 | plan 0020 소비 계약 |
+| 1-impl | `lib/riot/cookie-jar.ts` + tough-cookie 의존 추가 | ✅ 완료 | |
+| 2-1 | initAuthFlow authorize GET 테스트 | ✅ 완료 | |
+| 2-2 | submitCredentials happy 테스트 | ✅ 완료 | |
+| 2-3 | submitCredentials MFA 분기 테스트 | ✅ 완료 | |
+| 2-4 | submitCredentials invalid 테스트 | ✅ 완료 | |
+| 2-5 | submitCredentials timeout 테스트 | ✅ 완료 | |
+| 2-6 | submitCredentials 429 테스트 | ✅ 완료 | |
+| 2-7 | submitCredentials 5xx 테스트 | ✅ 완료 | |
+| 2-8 | submitMfa happy 테스트 | ✅ 완료 | |
+| 2-9 | submitMfa invalid 테스트 | ✅ 완료 | |
+| 2-10 | reauthWithSsid happy 테스트 | ✅ 완료 | plan 0020 소비 |
+| 2-11 | reauthWithSsid expired 테스트 | ✅ 완료 | |
+| 2-12 | reauthWithSsid 5xx 테스트 | ✅ 완료 | |
+| 2-13 | fetchPuuid 테스트 | ✅ 완료 | 이관 → jwt.ts |
+| 2-14 | exchangeEntitlements 테스트 | ✅ 완료 | 이관 |
+| 2-15 | 공통 AbortSignal 3s 주입 테스트 | ✅ 완료 | table-driven |
+| 2-impl-auth-client | `lib/riot/auth-client.ts` 구현 | ✅ 완료 | |
+| 2-impl-auth-shrink | `lib/riot/auth.ts` 축소 (buildRiotAuthorizeUrl 삭제, PUUID/entitlements 제거) | ✅ 완료 | FR-R6 선반영 |
+| 3-1 | normalizeRiotError invalid_credentials 매핑 | ✅ 완료 | |
+| 3-2 | normalizeRiotError rate_limited 매핑 | ✅ 완료 | |
+| 3-3 | normalizeRiotError mfa_invalid 매핑 | ✅ 완료 | |
+| 3-4 | normalizeRiotError riot_unavailable 매핑 | ✅ 완료 | |
+| 3-5 | raw body 민감 필드 redact 테스트 | ✅ 완료 | |
+| 3-6 | Set-Cookie redact 테스트 | ✅ 완료 | |
+| 3-7 | phase 힌트 분기 테스트 | ✅ 완료 | session_expired vs invalid_credentials |
+| 3-impl-normalize | `lib/riot/errors.ts` normalizeRiotError + AuthErrorCode export | ✅ 완료 | |
 
 **상태 범례**: ⬜ 미착수 | 🔨 진행중 | ✅ 완료 | ❌ 차단됨
 
