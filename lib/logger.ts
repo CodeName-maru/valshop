@@ -82,9 +82,9 @@ function redact(value: unknown, seen = new WeakSet()): unknown {
     return result;
   }
 
-  // For other object types, try toString or return a marker
+  // For other object types, use JSON serialization
   try {
-    return String(value);
+    return JSON.stringify(value);
   } catch {
     return "[UNSTRINGIFIABLE]";
   }
@@ -127,7 +127,6 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
   const redactedCtx = redact(ctx) as Record<string, unknown>;
 
   try {
-    // eslint-disable-next-line no-console
     console.log(
       JSON.stringify({
         level,
@@ -138,7 +137,6 @@ function write(level: LogLevel, msg: string, ctx: Record<string, unknown> = {}):
     );
   } catch {
     // Fallback if JSON.stringify fails
-    // eslint-disable-next-line no-console
     console.log(
       JSON.stringify({
         level,

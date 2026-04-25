@@ -4,7 +4,7 @@
  * FR-3의 storefront 응답에서 BonusStore 노드를 파싱
  */
 
-import type { NightMarketState, NightMarket, NightMarketItem } from "../domain/night-market";
+import type { NightMarketState, NightMarketItem } from "../domain/night-market";
 
 // VP UUID (고정값)
 const VP_UUID = "85ad13f7-3d1b-508f-8c90-63da8c3c76d5";

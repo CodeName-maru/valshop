@@ -3,7 +3,6 @@
  * Port interface + Supabase adapter for tracking sent notifications
  */
 
-import type { MatchedSkin } from "@/lib/domain/wishlist";
 
 /**
  * Port interface for notifications repository
@@ -75,7 +74,7 @@ export function createNotificationsRepo(supabase: any): NotificationsRepo {
         .in("skin_uuid", skinUuids);
 
       if (error) {
-        throw new Error(`Failed to filter unsent: ${error.message}`);
+        throw new Error(`Failed to filter unsent: ${String(error.message)}`);
       }
 
       const alreadyNotified = new Set((data || []).map((row: any) => row.skin_uuid));
@@ -106,7 +105,7 @@ export function createNotificationsRepo(supabase: any): NotificationsRepo {
         .insert(rows);
 
       if (error) {
-        throw new Error(`Failed to insert notifications: ${error.message}`);
+        throw new Error(`Failed to insert notifications: ${String(error.message)}`);
       }
     },
   };
