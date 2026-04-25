@@ -26,7 +26,7 @@ export function buildWishlistMatchEmail(matches: MatchedSkin[]): {
   if (matches.length === 1) {
     subject = `🎯 "${firstMatch.name}"이 상점에 있어요!`;
   } else {
-    subject = `🎯 ${matches.length}개 위시리스트 스킨이 상점에 도착했어요!`;
+    subject = `🎯 ${String(matches.length)}개 위시리스트 스킨이 상점에 도착했어요!`;
   }
 
   // Build HTML content

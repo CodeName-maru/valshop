@@ -27,7 +27,7 @@ const logger = {
 /**
  * GET 요청은 405 Method Not Allowed
  */
-export async function GET() {
+export function GET() {
   // AUTH_MODE 확인 (모든 메서드에 적용)
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
@@ -39,7 +39,7 @@ export async function GET() {
 /**
  * PUT 요청은 405 Method Not Allowed
  */
-export async function PUT() {
+export function PUT() {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
     return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });
@@ -50,7 +50,7 @@ export async function PUT() {
 /**
  * DELETE 요청은 405 Method Not Allowed
  */
-export async function DELETE() {
+export function DELETE() {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
     return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });

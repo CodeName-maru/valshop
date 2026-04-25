@@ -35,21 +35,21 @@ const logger = {
 /**
  * GET 요청은 405 Method Not Allowed
  */
-export async function GET() {
+export function GET() {
   return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
 /**
  * PUT 요청은 405 Method Not Allowed
  */
-export async function PUT() {
+export function PUT() {
   return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
 /**
  * DELETE 요청은 405 Method Not Allowed
  */
-export async function DELETE() {
+export function DELETE() {
   return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
 }
 
