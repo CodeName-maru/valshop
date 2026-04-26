@@ -22,6 +22,19 @@ vi.mock("@/lib/riot/storefront", () => ({
   getTodayStore: vi.fn(),
 }));
 
+// Mock client components that use Next.js hooks
+vi.mock("@/components/LogoutButton", () => ({
+  LogoutButton: () => <button data-testid="logout-button">Logout</button>,
+}));
+
+vi.mock("@/components/Countdown", () => ({
+  Countdown: () => <div data-testid="countdown">00:00:00</div>,
+}));
+
+vi.mock("@/app/(app)/dashboard/RetryButton", () => ({
+  RetryButton: () => <button data-testid="retry-button">재시도</button>,
+}));
+
 import { requireSession } from "@/lib/session/guard";
 import { getTodayStore } from "@/lib/riot/storefront";
 import type { SessionPayload } from "@/lib/session/types";
@@ -104,17 +117,13 @@ describe("Feature: Dashboard SSR 통합", () => {
     });
   });
 
-  describe("Scenario: Dashboard 세션 없음 → 에러 상태 표시", () => {
-    it("given_noSession_whenRequireSession_thenShowsErrorState", async () => {
+  describe("Scenario: Dashboard 세션 없음 → /login redirect", () => {
+    it("given_noSession_whenRenderDashboard_thenRedirectsToLogin", async () => {
       // Given: requireSession이 UNAUTHENTICATED 에러를 throw
       vi.mocked(requireSession).mockRejectedValue(new Error("UNAUTHENTICATED"));
 
-      // When: render
-      const html = renderToString(await DashboardPage());
-
-      // Then: 에러 상태가 표시됨 (실제로는 /login으로 redirect되어야 하지만,
-      // 테스트 환경에서는 에러 처리 fallback 확인)
-      expect(html).toContain("상점 정보를 불러올 수 없습니다");
+      // When/Then: redirect 호출 → NEXT_REDIRECT throw
+      await expect(DashboardPage()).rejects.toThrow(/NEXT_REDIRECT|UNAUTHENTICATED/);
     });
   });
 
@@ -129,8 +138,9 @@ describe("Feature: Dashboard SSR 통합", () => {
       // When: render
       const html = renderToString(await DashboardPage());
 
-      // Then: 에러 메시지 표시
+      // Then: 에러 메시지 표시 + 재시도 버튼
       expect(html).toContain("상점 정보를 불러올 수 없습니다");
+      expect(html).toMatch(/data-testid="retry-button"|재시도/);
     });
 
     it("given_storefrontThrowsRateLimitedError_whenRenderDashboard_thenShowsErrorState", async () => {
@@ -148,7 +158,7 @@ describe("Feature: Dashboard SSR 통합", () => {
     });
   });
 
-  describe("Scenario: 토큰 만료 → /login 리다이렉트", () => {
+  describe("Scenario: 토큰 만료 → /login?reason=expired redirect", () => {
     it("given_tokenExpiredError_whenRenderDashboard_thenRedirectsToLogin", async () => {
       // Given: getTodayStore가 TOKEN_EXPIRED 에러 throw
       vi.mocked(requireSession).mockResolvedValue(mockSession);
@@ -156,6 +166,7 @@ describe("Feature: Dashboard SSR 통합", () => {
         new RiotApiError("TOKEN_EXPIRED", "Token expired")
       );
 
+<<<<<<< HEAD
       // When & Then: redirect 함수가 호출되어야 함
       // Note: redirect()는 동기적으로 throw → Promise 로 감싸 rejects 검증
       await expect(Promise.resolve().then(() => renderToString(DashboardPage()))).rejects.toThrow(
