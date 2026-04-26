@@ -36,7 +36,7 @@ function mockFetch() {
       return new Response(null, { status: deleteStatus });
     }
     return new Response("not found", { status: 404 });
-  }) as any;
+  });
 }
 
 beforeEach(() => {
@@ -49,8 +49,8 @@ beforeEach(() => {
 describe("Test 5-1: 검색 페이지", () => {
   it("givenCatalogLoaded_whenTypeQuery_thenFilteredCardsRender", async () => {
     render(<SearchPage />);
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(3));
-    const input = screen.getByTestId("search-input") as HTMLInputElement;
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(3); });
+    const input = screen.getByTestId("search-input");
     fireEvent.change(input, { target: { value: "phantom" } });
     await waitFor(() => {
       const cards = screen.getAllByTestId("skin-card");
@@ -60,14 +60,14 @@ describe("Test 5-1: 검색 페이지", () => {
 
   it("givenEmptyQuery_whenMount_thenAllSkinsRender", async () => {
     render(<SearchPage />);
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(3));
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(3); });
   });
 });
 
 describe("Test 5-2: 토글 낙관적 UI", () => {
   it("givenSkinNotInWishlist_whenClickHeart_thenImmediatelyFilledAndPOSTCalled", async () => {
     render(<SearchPage />);
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(3));
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(3); });
     const btn = screen.getByTestId("wishlist-toggle-s1");
     expect(btn.getAttribute("aria-pressed")).toBe("false");
     await act(async () => {
@@ -75,17 +75,17 @@ describe("Test 5-2: 토글 낙관적 UI", () => {
     });
     expect(btn.getAttribute("aria-pressed")).toBe("true");
     await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
+      { expect(global.fetch).toHaveBeenCalledWith(
         "/api/wishlist",
         expect.objectContaining({ method: "POST" })
-      )
+      ); }
     );
   });
 
   it("givenSkinInWishlist_whenClickHeart_thenImmediatelyEmptiedAndDELETECalled", async () => {
     initialWishlist = ["s1"];
     render(<SearchPage />);
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(3));
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(3); });
     const btn = screen.getByTestId("wishlist-toggle-s1");
     expect(btn.getAttribute("aria-pressed")).toBe("true");
     await act(async () => {
@@ -93,10 +93,10 @@ describe("Test 5-2: 토글 낙관적 UI", () => {
     });
     expect(btn.getAttribute("aria-pressed")).toBe("false");
     await waitFor(() =>
-      expect(global.fetch).toHaveBeenCalledWith(
+      { expect(global.fetch).toHaveBeenCalledWith(
         "/api/wishlist/s1",
         expect.objectContaining({ method: "DELETE" })
-      )
+      ); }
     );
   });
 });
@@ -105,7 +105,7 @@ describe("Test 5-3: 실패 경로 (Availability)", () => {
   it("givenAPIReturns503_whenClickHeart_thenRollsBackAndShowsErrorToast", async () => {
     postStatus = 503;
     render(<SearchPage />);
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(3));
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(3); });
     const btn = screen.getByTestId("wishlist-toggle-s1");
     await act(async () => {
       fireEvent.click(btn);
@@ -119,12 +119,12 @@ describe("Test 5-3: 실패 경로 (Availability)", () => {
   it("givenAPIReturns422Limit_whenClickHeart_thenRollsBackAndShowsLimitToast", async () => {
     postStatus = 422;
     render(<SearchPage />);
-    await waitFor(() => expect(screen.getAllByTestId("skin-card").length).toBe(3));
+    await waitFor(() => { expect(screen.getAllByTestId("skin-card").length).toBe(3); });
     const btn = screen.getByTestId("wishlist-toggle-s1");
     await act(async () => {
       fireEvent.click(btn);
     });
-    await waitFor(() => expect(btn.getAttribute("aria-pressed")).toBe("false"));
+    await waitFor(() => { expect(btn.getAttribute("aria-pressed")).toBe("false"); });
     expect(screen.getByTestId("toast")).toHaveTextContent(/최대치/);
   });
 });

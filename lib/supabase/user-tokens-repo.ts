@@ -5,8 +5,13 @@
  * Plan 0014: PostgREST serializes bytea columns as `\x<hex>` strings on read
  * and accepts the same literal on write. We normalize at this adapter boundary
  * so that domain code (worker / cron / etc.) only ever sees `Uint8Array`.
+ *
+ * TODO (future plan): Supabase generated types 를 도입하여 `Record<string, unknown>`
+ * 기반 normalize 대신 `Database["public"]["Tables"]["user_tokens"]["Row"]` 를
+ * 직접 사용하도록 마이그레이션. 현재 PR 범위 밖 (별도 plan 으로 분리 예정).
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserTokensRow, UserTokenInsert, UpsertTokensInput } from "./types";
 import { parseBytea, encodeBytea, BytEaParseError } from "./bytea";
 
@@ -108,7 +113,7 @@ export interface UserTokensRepo {
  * @param supabase - Supabase client (service role)
  * @returns UserTokensRepo instance
  */
-export function createUserTokensRepo(supabase: any): UserTokensRepo {
+export function createUserTokensRepo(supabase: SupabaseClient): UserTokensRepo {
   return {
     async listActive(): Promise<UserTokensRow[]> {
       const { data, error } = await supabase
@@ -120,27 +125,27 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
         throw new Error(`Failed to list active users: ${String(error.message)}`);
       }
 
-      const rows = (data || []) as Record<string, unknown>[];
+      const rows = data as Record<string, unknown>[];
       return rows.map(normalizeRow);
     },
 
     async get(userId: string): Promise<UserTokensRow | null> {
-      const { data, error } = await supabase
+      const result = await supabase
         .from("user_tokens")
         .select("*")
         .eq("user_id", userId)
         .single();
 
-      if (error) {
-        if (error.code === "PGRST116") {
+      if (result.error) {
+        if (result.error.code === "PGRST116") {
           // Not found
           return null;
         }
-        throw new Error(`Failed to get user tokens: ${String(error.message)}`);
+        throw new Error(`Failed to get user tokens: ${String(result.error.message)}`);
       }
 
-      if (!data) return null;
-      return normalizeRow(data as Record<string, unknown>);
+      if (!result.data) return null;
+      return normalizeRow(result.data as Record<string, unknown>);
     },
 
     async markNeedsReauth(userId: string): Promise<void> {
@@ -165,7 +170,7 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
       if (error) {
         throw new Error(`Failed to upsert user tokens: ${String(error.message)}`);
       }
-      return { user_id: (data as { user_id: string }).user_id };
+      return { user_id: String(data.user_id) };
     },
 
     // === Plan 0018 FR-R1: 신규 API ===
@@ -193,26 +198,26 @@ export function createUserTokensRepo(supabase: any): UserTokensRepo {
       if (error) {
         throw new Error(`Failed to upsert user tokens: ${String(error.message)}`);
       }
-      return { user_id: (data as { user_id: string }).user_id };
+      return { user_id: String(data.user_id) };
     },
 
     async findBySessionId(sessionId: string): Promise<UserTokensRow | null> {
-      const { data, error } = await supabase
+      const result = await supabase
         .from("user_tokens")
         .select("*")
         .eq("session_id", sessionId)
         .single();
 
-      if (error) {
-        if (error.code === "PGRST116") {
+      if (result.error) {
+        if (result.error.code === "PGRST116") {
           // Not found
           return null;
         }
-        throw new Error(`Failed to find user tokens by session_id: ${String(error.message)}`);
+        throw new Error(`Failed to find user tokens by session_id: ${String(result.error.message)}`);
       }
 
-      if (!data) return null;
-      return normalizeRow(data as Record<string, unknown>);
+      if (!result.data) return null;
+      return normalizeRow(result.data as Record<string, unknown>);
     },
 
     async deleteBySessionId(sessionId: string): Promise<void> {

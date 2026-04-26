@@ -13,7 +13,7 @@ describe("Feature: toUserMessage sanitization", () => {
     const err: RiotError = {
       code: "SERVER_ERROR",
       upstreamStatus: 500,
-    } as RiotError;
+    };
     (err as unknown as { rawBody: string }).rawBody = JSON.stringify({
       access_token: "SECRET_TOKEN_XYZ",
     });
@@ -45,7 +45,7 @@ describe("Feature: toLogPayload redaction", () => {
     const err: RiotError = {
       code: "SERVER_ERROR",
       upstreamStatus: 500,
-    } as RiotError;
+    };
     (err as unknown as { context: { headers: Record<string, string> } }).context = {
       headers: {
         Authorization: "Bearer SECRET_TOKEN",
@@ -93,7 +93,7 @@ describe("Feature: toLogPayload redaction", () => {
     const err: RiotError = {
       code: "SERVER_ERROR",
       upstreamStatus: 500,
-    } as RiotError;
+    };
     (err as unknown as { context: Record<string, unknown> }).context = {
       puuid: "12345678-1234-1234-1234-123456789abc",
       access_token: "SECRET_ACCESS",

@@ -3,17 +3,23 @@
  * Phase 2: ISR 캐시 검증 테스트
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getSkinCatalog, getTierCatalog } from "@/lib/valorant-api/catalog";
 import { getClientVersion } from "@/lib/riot/version";
 
 // Mock fetch globally
+// MSW listen() in vitest.setup.ts patches globalThis.fetch in beforeAll,
+// so we must (re)stub fetch in beforeEach to win against MSW interceptor.
 const mockFetch = vi.fn();
-global.fetch = mockFetch as any;
 
 describe("Feature: 메타 카탈로그 ISR 캐시", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("Scenario: 스킨 카탈로그 fetch는 ISR revalidate 86400 사용", () => {
@@ -33,7 +39,7 @@ describe("Feature: 메타 카탈로그 ISR 캐시", () => {
           ],
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getSkinCatalog()
       await getSkinCatalog();
@@ -71,7 +77,7 @@ describe("Feature: 메타 카탈로그 ISR 캐시", () => {
           ],
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getSkinCatalog()
       const result = await getSkinCatalog();
@@ -112,7 +118,7 @@ describe("Feature: 메타 카탈로그 ISR 캐시", () => {
           ],
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getTierCatalog()
       const result = await getTierCatalog();
@@ -135,6 +141,11 @@ describe("Feature: 메타 카탈로그 ISR 캐시", () => {
 describe("Feature: Client Version Resolver", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("Scenario: client version resolver ISR 3600", () => {
@@ -149,7 +160,7 @@ describe("Feature: Client Version Resolver", () => {
           },
         }),
       };
-      mockFetch.mockResolvedValueOnce(mockResponse as unknown as Response);
+      mockFetch.mockResolvedValueOnce(mockResponse);
 
       // When: getClientVersion()
       const version = await getClientVersion();

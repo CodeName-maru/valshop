@@ -113,16 +113,15 @@ export async function POST(req: NextRequest) {
   let password: string;
 
   try {
-    const body = await req.json();
-    username = body.username;
-    password = body.password;
-
-    if (typeof username !== "string" || typeof password !== "string") {
+    const body = (await req.json()) as { username?: unknown; password?: unknown };
+    if (typeof body.username !== "string" || typeof body.password !== "string") {
       return NextResponse.json(
         { code: "invalid_credentials" as AuthErrorCode },
         { status: 401 }
       );
     }
+    username = body.username;
+    password = body.password;
   } catch {
     return NextResponse.json(
       { code: "invalid_credentials" as AuthErrorCode },
@@ -179,17 +178,9 @@ export async function POST(req: NextRequest) {
         // 여기서는 session store에 저장
         const store = getSessionStore();
 
-        // jar에서 ssid/tdid 추출 (RiotCookieJar는 직렬화 가능)
-        const jarJson = jar.serialize();
-        const jarObj = JSON.parse(jarJson);
-
-        // tough-cookie JSON에서 ssid/tdid 찾기
-        const cookies = jarObj.cookies || [];
-        const ssidCookie = cookies.find((c: any) => c.key === "ssid");
-        const tdidCookie = cookies.find((c: any) => c.key === "tdid");
-
-        const ssid = ssidCookie?.value || "";
-        const tdid = tdidCookie?.value || undefined;
+        // jar에서 ssid/tdid 추출 (typed helper)
+        const ssid = jar.getCookieValue("ssid") ?? "";
+        const tdid = jar.getCookieValue("tdid");
 
         const { sessionId, maxAge } = await store.createSession(puuid, {
           accessToken: credResult.accessToken,
@@ -225,19 +216,12 @@ export async function POST(req: NextRequest) {
         });
 
         // jar를 직렬화하여 auth_pending에 암호화 저장
-        const jarCookies: { name: string; value: string; domain?: string; path?: string }[] = [];
-        const jarJson = jar.serialize();
-        const jarObj = JSON.parse(jarJson);
-        const cookies = jarObj.cookies || [];
-
-        for (const cookie of cookies) {
-          jarCookies.push({
-            name: cookie.key,
-            value: cookie.value,
-            domain: cookie.domain,
-            path: cookie.path,
-          });
-        }
+        const jarCookies = jar.listCookies().map((c) => ({
+          name: c.key,
+          value: c.value,
+          domain: c.domain,
+          path: c.path,
+        }));
 
         const pendingBlob = await encodePendingJar(jarCookies, username);
 
@@ -282,7 +266,7 @@ export async function POST(req: NextRequest) {
       }
 
       default: {
-        logger.error("auth.login.unknown_kind", { kind: (credResult as any).kind });
+        logger.error("auth.login.unknown_kind", { kind: (credResult as { kind: string }).kind });
         return NextResponse.json(
           { code: "unknown" as AuthErrorCode },
           { status: 500 }

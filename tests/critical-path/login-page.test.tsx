@@ -204,7 +204,7 @@ describe("Feature: Login FSM reducer", () => {
     "givenState_%s_whenEvent_%s_thenNextStatus",
     (from, event, expectedStatus) => {
       const state = { ...initialLoginState, ...from } as LoginState;
-      const next = loginReducer(state, event as LoginEvent);
+      const next = loginReducer(state, event);
       expect(next.status).toBe(expectedStatus);
     }
   );

@@ -15,7 +15,7 @@ export default async function NightMarketPage() {
   }
 
   // TODO: 메타 데이터 로드
-  const metaBySkin: Record<string, any> = {};
+  const metaBySkin: Record<string, import("@/lib/valorant-api/match").SkinMeta> = {};
 
   return <NightMarketView market={nightMarketState.market} metaBySkin={metaBySkin} />;
 }

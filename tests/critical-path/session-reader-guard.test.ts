@@ -68,7 +68,7 @@ describe("Plan 0011 Phase 3: readSessionFromCookies", () => {
     const { readSessionFromCookies } = await import("@/lib/auth/cookie");
     const ct = await encrypted(payload());
     const buf = Buffer.from(ct, "base64");
-    buf[Math.floor(buf.length / 2)] = buf[Math.floor(buf.length / 2)]! ^ 0x5A;
+    buf[Math.floor(buf.length / 2)] = (buf[Math.floor(buf.length / 2)] ?? 0) ^ 0x5A;
     const tampered = buf.toString("base64");
     const result = await readSessionFromCookies(`session=${tampered}`);
     expect(result).toBeNull();

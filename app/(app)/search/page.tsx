@@ -35,11 +35,13 @@ export default function SearchPage() {
           setError("카탈로그를 불러오지 못했습니다");
           return;
         }
-        const cBody = await cRes.json();
-        const wBody = wRes.ok ? await wRes.json() : { skins: [] };
+        const cBody = (await cRes.json()) as { skins?: Skin[] };
+        const wBody = wRes.ok
+          ? ((await wRes.json()) as { skins?: string[] })
+          : { skins: [] };
         if (!alive) return;
-        setCatalog(cBody.skins || []);
-        setWishlist(new Set<string>(wBody.skins || []));
+        setCatalog(cBody.skins ?? []);
+        setWishlist(new Set<string>(wBody.skins ?? []));
       } catch {
         if (alive) setError("네트워크 오류");
       } finally {
@@ -62,7 +64,7 @@ export default function SearchPage() {
       <input
         type="search"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => { setQuery(e.target.value); }}
         placeholder="스킨 이름 검색"
         aria-label="스킨 이름 검색"
         data-testid="search-input"
@@ -94,7 +96,7 @@ export default function SearchPage() {
                 }}
                 onError={(m) => {
                   setToast(m);
-                  setTimeout(() => setToast(null), 4000);
+                  setTimeout(() => { setToast(null); }, 4000);
                 }}
               />
             }

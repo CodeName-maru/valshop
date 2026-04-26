@@ -16,9 +16,9 @@ import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with our module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[session] ${msg}`, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[session] ${msg}`, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[session] ${msg}`, meta),
+  info: (msg: string, meta?: Record<string, unknown>) => { realLogger.info(`[session] ${msg}`, meta); },
+  warn: (msg: string, meta?: Record<string, unknown>) => { realLogger.warn(`[session] ${msg}`, meta); },
+  error: (msg: string, meta?: Record<string, unknown>) => { realLogger.error(`[session] ${msg}`, meta); },
 };
 
 /**

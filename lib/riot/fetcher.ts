@@ -3,6 +3,7 @@
  * Plan 0006에서 정의한 포트 인터페이스
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated -- 이 포트는 MVP cookie 세션(SessionPayload)을 입력으로 받음. ResolvedSession 으로의 전환은 ADR-0002 Phase 2 에서 함께 진행 (accessExpiresAt 필드 차이). */
 import type { SessionPayload } from "@/lib/session/types";
 
 /**

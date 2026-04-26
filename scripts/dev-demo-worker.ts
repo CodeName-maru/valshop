@@ -120,7 +120,7 @@ async function main() {
         return { data: { id: `mock-${Date.now()}` }, error: null } as any;
       },
     },
-  } as ResendLike;
+  };
 
   const deps = {
     userTokensRepo,

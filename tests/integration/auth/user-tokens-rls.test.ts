@@ -23,6 +23,15 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
     ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
+  function requireAnon() {
+    if (!anonClient) throw new Error("anonClient not configured");
+    return anonClient;
+  }
+  function requireService() {
+    if (!serviceRole) throw new Error("serviceRole not configured");
+    return serviceRole;
+  }
+
   beforeAll(() => {
     if (!serviceRole || !anonClient) {
       console.warn("Supabase env not configured, skipping RLS tests");
@@ -31,7 +40,7 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
 
   // Test 4-1: anon client — select 권한 거부
   it.skipIf(!anonClient)("givenAnonClient_whenSelectUserTokens_thenZeroRowsOrDenied", async () => {
-    const { data, error } = await anonClient!
+    const { data, error } = await requireAnon()
       .from("user_tokens")
       .select("*");
 
@@ -45,7 +54,7 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
 
   // Test 4-2: anon client — insert 거부
   it.skipIf(!anonClient)("givenAnonClient_whenInsertUserTokens_thenRejected", async () => {
-    const { error } = await anonClient!
+    const { error } = await requireAnon()
       .from("user_tokens")
       .insert({
         puuid: "test-puuid",
@@ -60,7 +69,7 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
 
   // Test 4-3: anon — ssid_enc / tdid_enc 컬럼도 접근 불가
   it.skipIf(!anonClient)("givenAnonClient_whenSelectSsidEncColumn_thenDeniedOrEmpty", async () => {
-    const { data, error } = await anonClient!
+    const { data, error } = await requireAnon()
       .from("user_tokens")
       .select("ssid_enc, tdid_enc");
 
@@ -75,7 +84,7 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
   it.skipIf(!serviceRole)("givenServiceRoleClient_whenSelectAll_thenRowsVisible", async () => {
     // service_role으로 row 생성
     const testPuuid = `test-rls-${Date.now()}`;
-    const { error: insertError } = await serviceRole!
+    const { error: insertError } = await requireService()
       .from("user_tokens")
       .insert({
         puuid: testPuuid,
@@ -93,7 +102,7 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
     expect(insertError).toBeNull();
 
     // service_role으로 select → rows 보임
-    const { data, error: selectError } = await serviceRole!
+    const { data, error: selectError } = await requireService()
       .from("user_tokens")
       .select("*")
       .eq("puuid", testPuuid);
@@ -102,12 +111,12 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
     expect(data?.length).toBeGreaterThan(0);
 
     // cleanup
-    await serviceRole!.from("user_tokens").delete().eq("puuid", testPuuid);
+    await requireService().from("user_tokens").delete().eq("puuid", testPuuid);
   });
 
   // Test 4-5: rate_limit_buckets anon 거부
   it.skipIf(!anonClient)("givenAnonClient_whenSelectRateLimitBuckets_thenDenied", async () => {
-    const { data, error } = await anonClient!
+    const { data, error } = await requireAnon()
       .from("rate_limit_buckets")
       .select("*");
 
@@ -120,7 +129,7 @@ describe("UserTokens RLS — Plan 0018 Security NFR", () => {
 
   // Test 4-6: repo 왕복 smoke (실 Supabase)
   it.skipIf(!serviceRole)("givenServiceRoleRepo_whenUpsertThenFindThenDelete_thenCycle", async () => {
-    const repo = createUserTokensRepo(serviceRole!);
+    const repo = createUserTokensRepo(requireService());
 
     const testPuuid = `test-repo-${Date.now()}`;
     const testSessionId = `session-${Date.now()}`;

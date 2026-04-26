@@ -42,7 +42,7 @@ type LoginEvent =
 /**
  * 초기 상태
  */
-const initialLoginState: LoginState = {
+export const initialLoginState: LoginState = {
   status: "credential",
   error: null,
   emailHint: null,
@@ -54,7 +54,7 @@ const initialLoginState: LoginState = {
  *
  * spec § 4-3 전이표의 1:1 구현
  */
-function loginReducer(state: LoginState, event: LoginEvent): LoginState {
+export function loginReducer(state: LoginState, event: LoginEvent): LoginState {
   switch (state.status) {
     case "credential":
       if (event.type === "SUBMIT_CREDENTIAL") {
@@ -167,7 +167,7 @@ function LoginPageInner() {
       }
     };
     window.addEventListener("pageshow", onShow);
-    return () => window.removeEventListener("pageshow", onShow);
+    return () => { window.removeEventListener("pageshow", onShow); };
   }, [state.status]);
 
   const handleCredentialSubmit = async ({
@@ -187,7 +187,12 @@ function LoginPageInner() {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as {
+        ok?: boolean;
+        status?: string;
+        email_hint?: string;
+        code?: string;
+      };
 
       if (data.ok) {
         dispatch({ type: "CREDENTIAL_OK" });
@@ -196,12 +201,12 @@ function LoginPageInner() {
       }
 
       if (data.status === "mfa_required") {
-        dispatch({ type: "CREDENTIAL_MFA", emailHint: data.email_hint });
+        dispatch({ type: "CREDENTIAL_MFA", emailHint: data.email_hint ?? "" });
         return;
       }
 
       if (data.code) {
-        dispatch({ type: "CREDENTIAL_ERROR", code: data.code });
+        dispatch({ type: "CREDENTIAL_ERROR", code: data.code as AuthErrorCode });
         return;
       }
 
@@ -231,7 +236,7 @@ function LoginPageInner() {
         body: JSON.stringify({ code }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as { ok?: boolean; code?: string };
 
       if (data.ok) {
         dispatch({ type: "MFA_OK" });
@@ -244,7 +249,7 @@ function LoginPageInner() {
       }
 
       if (data.code) {
-        dispatch({ type: "MFA_ERROR", code: data.code });
+        dispatch({ type: "MFA_ERROR", code: data.code as AuthErrorCode });
         return;
       }
 

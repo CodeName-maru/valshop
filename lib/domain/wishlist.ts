@@ -50,7 +50,7 @@ export interface WishlistRepo {
  * - 원본 배열은 변경하지 않음 (immutability)
  */
 export function filterSkinsByQuery(skins: Skin[], q: string): Skin[] {
-  const norm = (q ?? "").toLowerCase().trim();
+  const norm = q.toLowerCase().trim();
   if (norm === "") {
     return skins.slice();
   }

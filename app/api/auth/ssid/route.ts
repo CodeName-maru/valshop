@@ -18,9 +18,9 @@ import { logger as realLogger } from "@/lib/logger";
 
 // Re-export with module prefix
 const logger = {
-  info: (msg: string, meta?: Record<string, unknown>) => realLogger.info(`[auth.ssid] ${msg}`, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => realLogger.warn(`[auth.ssid] ${msg}`, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => realLogger.error(`[auth.ssid] ${msg}`, meta),
+  info: (msg: string, meta?: Record<string, unknown>) => { realLogger.info(`[auth.ssid] ${msg}`, meta); },
+  warn: (msg: string, meta?: Record<string, unknown>) => { realLogger.warn(`[auth.ssid] ${msg}`, meta); },
+  error: (msg: string, meta?: Record<string, unknown>) => { realLogger.error(`[auth.ssid] ${msg}`, meta); },
 };
 
 /**
@@ -30,9 +30,9 @@ export function GET() {
   // AUTH_MODE 확인 (모든 메서드에 적용)
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
-    return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });
+    return NextResponse.json({ code: "unknown" }, { status: 404 });
   }
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
@@ -41,9 +41,9 @@ export function GET() {
 export function PUT() {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
-    return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });
+    return NextResponse.json({ code: "unknown" }, { status: 404 });
   }
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
@@ -52,9 +52,9 @@ export function PUT() {
 export function DELETE() {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
-    return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 404 });
+    return NextResponse.json({ code: "unknown" }, { status: 404 });
   }
-  return NextResponse.json({ code: "unknown" as AuthErrorCode }, { status: 405 });
+  return NextResponse.json({ code: "unknown" }, { status: 405 });
 }
 
 /**
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   const authMode = process.env.AUTH_MODE || "credentials";
   if (authMode !== "manual-ssid") {
     return NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 404 }
     );
   }
@@ -100,24 +100,19 @@ export async function POST(req: NextRequest) {
   let region: string;
 
   try {
-    const body = await req.json();
-    ssid = body.ssid;
-    tdid = body.tdid;
-    region = body.region || "kr";
-
-    if (typeof ssid !== "string") {
+    const body = (await req.json()) as { ssid?: unknown; tdid?: unknown; region?: unknown };
+    if (typeof body.ssid !== "string") {
       return NextResponse.json(
-        { code: "session_expired" as AuthErrorCode },
+        { code: "session_expired" },
         { status: 401 }
       );
     }
-
-    if (tdid !== undefined && typeof tdid !== "string") {
-      tdid = undefined;
-    }
+    ssid = body.ssid;
+    tdid = typeof body.tdid === "string" ? body.tdid : undefined;
+    region = typeof body.region === "string" && body.region ? body.region : "kr";
   } catch {
     return NextResponse.json(
-      { code: "session_expired" as AuthErrorCode },
+      { code: "session_expired" },
       { status: 401 }
     );
   }
@@ -151,7 +146,7 @@ export async function POST(req: NextRequest) {
         if (parts.length !== 3) {
           logger.error("auth.ssid.invalid_jwt");
           return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
+            { code: "riot_unavailable" },
             { status: 502 }
           );
         }
@@ -160,7 +155,7 @@ export async function POST(req: NextRequest) {
         if (!payloadPart) {
           logger.error("auth.ssid.invalid_jwt_payload");
           return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
+            { code: "riot_unavailable" },
             { status: 502 }
           );
         }
@@ -168,13 +163,13 @@ export async function POST(req: NextRequest) {
         const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
         const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
         const decoded = atob(padded);
-        const payload = JSON.parse(decoded);
-        const puuid = payload.sub as string;
+        const payload = JSON.parse(decoded) as { sub?: string };
+        const puuid = payload.sub ?? "";
 
         if (!puuid) {
           logger.error("auth.ssid.puuid_missing");
           return NextResponse.json(
-            { code: "riot_unavailable" as AuthErrorCode },
+            { code: "riot_unavailable" },
             { status: 502 }
           );
         }
@@ -222,7 +217,7 @@ export async function POST(req: NextRequest) {
       case "expired": {
         logger.warn("auth.ssid.expired");
         return NextResponse.json(
-          { code: "session_expired" as AuthErrorCode },
+          { code: "session_expired" },
           { status: 401 }
         );
       }
@@ -230,15 +225,15 @@ export async function POST(req: NextRequest) {
       case "upstream": {
         logger.error("auth.ssid.upstream_error");
         return NextResponse.json(
-          { code: "riot_unavailable" as AuthErrorCode },
+          { code: "riot_unavailable" },
           { status: 502 }
         );
       }
 
       default: {
-        logger.error("auth.ssid.unknown_kind", { kind: (reauthResult as any).kind });
+        logger.error("auth.ssid.unknown_kind", { kind: (reauthResult as { kind: string }).kind });
         return NextResponse.json(
-          { code: "unknown" as AuthErrorCode },
+          { code: "unknown" },
           { status: 500 }
         );
       }
@@ -249,7 +244,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { code: "unknown" as AuthErrorCode },
+      { code: "unknown" },
       { status: 500 }
     );
   }

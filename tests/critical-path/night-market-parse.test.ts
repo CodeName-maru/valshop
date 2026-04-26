@@ -21,7 +21,7 @@ describe("Feature: 야시장 파싱", () => {
       // Given
       const storefront = fixtureBonus as any;
       // When
-      const result = parseNightMarket(storefront) as NightMarketState;
+      const result = parseNightMarket(storefront);
       // Then
       expect(result.active).toBe(true);
       if (!result.active) throw new Error("expected active");

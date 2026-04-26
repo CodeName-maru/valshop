@@ -34,7 +34,7 @@ export class RiotCookieJar {
    */
   async storeFromResponse(url: string, res: Response): Promise<void> {
     const cookies = res.headers.getSetCookie();
-    if (!cookies || cookies.length === 0) {
+    if (cookies.length === 0) {
       return;
     }
 
@@ -68,12 +68,44 @@ export class RiotCookieJar {
   }
 
   /**
+   * jar의 쿠키 목록을 typed 형태로 반환합니다.
+   * Riot auth flow에서 ssid/tdid 같은 특정 쿠키를 추출할 때 사용합니다.
+   */
+  listCookies(): Array<{ key: string; value: string; domain?: string; path?: string }> {
+    interface ToughCookieRecord {
+      key?: string;
+      value?: string;
+      domain?: string;
+      path?: string;
+    }
+    const json = this.jar.toJSON() as { cookies?: ToughCookieRecord[] };
+    const cookies = json.cookies ?? [];
+    return cookies
+      .filter((c): c is Required<Pick<ToughCookieRecord, "key" | "value">> & ToughCookieRecord =>
+        typeof c.key === "string" && typeof c.value === "string"
+      )
+      .map((c) => ({
+        key: c.key,
+        value: c.value,
+        domain: c.domain,
+        path: c.path,
+      }));
+  }
+
+  /**
+   * 특정 이름의 쿠키 값을 반환합니다. 없으면 undefined.
+   */
+  getCookieValue(name: string): string | undefined {
+    return this.listCookies().find((c) => c.key === name)?.value;
+  }
+
+  /**
    * JSON 문자열에서 jar를 역직렬화합니다.
    * 실패 시 빈 jar를 반환합니다.
    */
   static deserialize(blob: string): RiotCookieJar {
     try {
-      const parsed = JSON.parse(blob);
+      const parsed = JSON.parse(blob) as Parameters<typeof ToughCookieJar.fromJSON>[0];
       // tough-cookie의 CookieJar는 fromJSON 스태틱 메서드를 제공
       const jar = ToughCookieJar.fromJSON(parsed);
       const wrapper = new RiotCookieJar();

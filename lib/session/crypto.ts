@@ -17,6 +17,7 @@
  * - `decryptSession(ct)`: base64 → AES-GCM decrypt → JSON.parse + 필수 필드 검증
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated -- 이 파일은 SessionPayload 기반 MVP cookie 세션 암복호화 구현체. ResolvedSession 으로의 마이그레이션은 ADR-0002 Phase 2 (Supabase user_tokens) 완료 후 진행. */
 import { encrypt, decrypt, loadKey } from "@/lib/crypto/aes-gcm";
 import type { SessionPayload } from "./types";
 
@@ -35,7 +36,7 @@ export const SESSION_TTL_SEC = 1209600; // 14 * 24 * 60 * 60
  * 최초 호출 시 importKey 를 수행하고 그 Promise 를 캐시한다.
  * 실패(env 부재/길이 오류) 시 캐시에 저장하지 않고 throw.
  */
-export function getTokenKey(): Promise<CryptoKey> {
+export async function getTokenKey(): Promise<CryptoKey> {
   if (cachedTokenKey) return cachedTokenKey;
   const keyBase64 = process.env.TOKEN_ENC_KEY;
   if (!keyBase64) {
@@ -118,7 +119,7 @@ export async function encryptSession(payload: SessionPayload): Promise<string> {
  * 복호화 실패/JSON 오류/필수 필드 누락 시 throw.
  */
 export async function decryptSession(ciphertext: string): Promise<SessionPayload> {
-  const key = await getSessionKey();
+  const key = await getTokenKey();
   const plaintext = await decrypt(ciphertext, key);
   let parsed: unknown;
   try {
@@ -195,9 +196,9 @@ export function decodeJwt(jwt: string): Record<string, unknown> | null {
     const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
     const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
     const decoded = atob(padded);
-    const json = JSON.parse(decoded);
+    const json = JSON.parse(decoded) as Record<string, unknown>;
 
-    return json as Record<string, unknown>;
+    return json;
   } catch {
     return null;
   }

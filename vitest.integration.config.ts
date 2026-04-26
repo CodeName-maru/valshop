@@ -5,6 +5,8 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Integration test config — `npm run test:integration` (SUPABASE_INTEGRATION=1).
+// Default `npm test` 에서는 vitest.config.ts 에서 tests/integration/** 를 exclude.
 export default defineConfig({
   plugins: [react()],
   root: "./",
@@ -12,14 +14,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
-    testTimeout: 15000, // 15초 타임아웃 (429 retry 테스트 대응)
-    include: ["./tests/**/*.test.{ts,tsx}"],
-    exclude: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/tests/e2e/**",
-      "**/tests/integration/**",
-    ],
+    testTimeout: 30000,
+    include: ["./tests/integration/**/*.test.{ts,tsx}"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**"],
   },
   resolve: {
     alias: {
