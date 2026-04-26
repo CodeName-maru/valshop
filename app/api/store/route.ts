@@ -79,6 +79,7 @@ export async function GET() {
         RIOT_5XX: 502,
         INTERNAL_ERROR: 500,
         UNAUTHENTICATED: 401,
+        UPSTREAM_UNAVAILABLE: 502,
       };
 
       return NextResponse.json(

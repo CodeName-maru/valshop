@@ -21,7 +21,8 @@ export type RiotErrorCode =
   | "RIOT_5XX"
   | "RIOT_RATE_LIMITED"
   | "INTERNAL_ERROR"
-  | "UNAUTHENTICATED";
+  | "UNAUTHENTICATED"
+  | "UPSTREAM_UNAVAILABLE";
 
 /**
  * Riot API 에러
